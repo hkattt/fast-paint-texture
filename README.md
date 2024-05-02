@@ -22,7 +22,9 @@ Before trying to run any of these scripts, create the `build` directory in the p
 │   ├── nature.jpg
 │   └── nature.png
 ├── include
-│   └── rasterizer.hpp
+|   ├── image.hpp
+|   ├── kernel.hpp
+|   ├── paint.hpp
 ├── out
 │   ├── paint-cherry-blossom.png
 │   ├── paint-cool-cat.png
@@ -34,8 +36,10 @@ Before trying to run any of these scripts, create the `build` directory in the p
 │   ├── make.sh
 │   └── run.sh
 └── src
+    ├── image.cpp
+    ├── kernal.cpp
     ├── main.cpp
-    └── rasterizer.cpp
+    └── paint.cpp
 ```
 
 Use the following scripts in the *root directory* for simple usage.
