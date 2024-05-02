@@ -3,7 +3,7 @@
 #include <string>
 #include <Eigen/Dense>
 
-#include "rasterizer.hpp"
+#include "paint.hpp"
 
 using namespace std;
 using namespace Eigen;
@@ -43,10 +43,11 @@ int main(int argc, const char **argv) {
 
     cout << "Loaded: " << input_file <<  " (" << input_image.cols << "x" << input_image.rows << ")" << ::endl;
 
-    rst::rasterizer r(input_image.cols, input_image.rows, input_image);
+    // Create a Paint instance for the input image
+    Paint paint(input_image.cols, input_image.rows, input_image);
 
-    // Save rasterized image
-    cv::Mat output_image = r.to_image();
+    // Paint the image and save the output file
+    cv::Mat output_image = paint.paint();
     cv::imwrite(output_path + output_file, output_image);
 
     cout << "Result saved to: " << output_path + output_file << std::endl;
