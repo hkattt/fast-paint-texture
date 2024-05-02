@@ -25,12 +25,5 @@ class Kernel {
          * 
          * @return kernel value at (x, y)
         */
-        float get_value(int x, int y) const {
-            if (x < 0 || x > len || y < 0 || y > len) {
-                throw std::invalid_argument(
-                    "Invalid argument: (" + std::to_string(x) + ", " + std::to_string(y) + ") for kernel with length: " + std::to_string(len)
-                );
-            }
-            return this->cached_values[x * len + y];
-        }
+        float get_value(int x, int y) const;
 };

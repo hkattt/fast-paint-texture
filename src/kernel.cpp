@@ -1,6 +1,7 @@
 #include <math.h>
 
 #include "kernel.hpp"
+#include <stdexcept>
 
 using namespace std;
 
@@ -35,4 +36,13 @@ Kernel::Kernel(int len, float sigma) {
             this->cached_values[j * len + i] /= sum;
         }
     }
+}
+
+float Kernel::get_value(int x, int y) const {
+    if (x < 0 || x > len || y < 0 || y > len) {
+        throw std::invalid_argument(
+            "Invalid argument: (" + std::to_string(x) + ", " + std::to_string(y) + ") for kernel with length: " + std::to_string(len)
+        );
+    }
+    return this->cached_values[x * len + y];
 }
