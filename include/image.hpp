@@ -1,6 +1,10 @@
 #pragma once
 
+#include <Eigen/Eigen>
+
 #include "kernel.hpp"
+
+using namespace Eigen;
 
 /**
  * Image class to implement image-processing functionality
@@ -21,7 +25,7 @@ class Image {
          * 
          * @returns: Convovled pixel
         */
-        cv::Vec3b convolve(int row, int col, const Kernel *kernel);
+        cv::Vec3b convolve(int row, int col, const GaussianKernel *kernel);
 
     public:
         Image() : width(0), height(0) {}
@@ -32,13 +36,41 @@ class Image {
             this->image = image;
         }
 
+        cv::Mat get_image() {
+            return image;
+        }
+
+        /**
+         * @param x: x-coordinate of the pixel
+         * @param y: y-coordinate of the pixel
+         * 
+         * @return: Pixel at (x, y) represented as a vector (RGB)
+        */
+        Eigen::Vector3f get_pixel(int x, int y) {
+            cv::Vec3b pixel = image.at<cv::Vec3b>(y, x);
+            // Note that cv::Vec3b stores (BGR) values
+            return Eigen::Vector3f(pixel[2], pixel[1], pixel[0]);
+        }
+
         /**
          * Performs blurring using colvolution with the provided Gaussian kernel
          * 
          * @param kernel: Gaussian kernel 
          * 
-         * @returns: Matrix representing the blurred image
+         * @return: Matrix representing the blurred image
         */
-        cv::Mat gaussian_blur(const Kernel *kernel);
+        cv::Mat gaussian_blur(const GaussianKernel *kernel);
+
+        /**
+         * Computes the gradient of the image at the given point
+         * 
+         * @param x: x-coordinate 
+         * @param y: y-coordinate
+         * @param sobel_x: Horizontal sobel kernel
+         * @param sobel_y: Vertical sobel kernel
+         * 
+         * @return: Tuple containing the gradient (gx, gy) and the magnitude of the gradient
+        */
+        std::tuple<Eigen::Vector2f, float> compute_gradient(int x, int y, HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y);
 };
 

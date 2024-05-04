@@ -3,15 +3,14 @@
 #include "paint.hpp"
 #include "image.hpp"
 #include "kernel.hpp"
+#include "stroke.hpp"
+#include "parameters.h"
 
 using namespace std;
 
 /** PUBLIC METHODS */
 
 Paint::Paint(int width, int height, cv::Mat source_image) {
-    cv::Vec3b pixel;
-    int ind;
-
     // Ensure dimensions are valid
     if (source_image.cols != width || source_image.rows != height) {
         throw std::invalid_argument("Unable to create rasterizer: input image dimensions \
@@ -23,29 +22,15 @@ Paint::Paint(int width, int height, cv::Mat source_image) {
     this->frame_buf.resize(width * height);
     this->depth_buf.resize(width * height);
     this->source_image = Image(width, height, source_image);
-
-    // Load the input image into the frame buffer
-    for (int row = 0; row < source_image.rows; row++) {
-        for (int col = 0; col < source_image.cols; col++) {
-            // Extract the current pixel from the input image
-            // Note that OpenCV indexes via (row, column)
-            pixel = source_image.at<cv::Vec3b>(row, col);
-            
-            // Add the current pixel to the frame buffer
-            // cv::Mat origin (0, 0) starts at the top-left corner
-            ind = get_index(col, row);
-            frame_buf[ind] = Eigen::Vector3f(pixel[0], pixel[1], pixel[2]);
-        }
-    }
 }
 
 cv::Mat Paint::paint() {
     // Standard deviation used for Gaussian blur
-    float sigma = this->blur_factor * this->min_brush_size;
+    float sigma = ProgramParameters::blur_factor * ProgramParameters::min_brush_size;
     // Length of the Gaussian kernel window
     int kernel_len = std::max(8 * sigma, 3.0f);
 
-    Kernel kernel = Kernel(kernel_len, sigma);
+    GaussianKernel kernel = GaussianKernel(kernel_len, sigma);
     
     return source_image.gaussian_blur(&kernel); 
 }
