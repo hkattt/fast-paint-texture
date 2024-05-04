@@ -22,9 +22,11 @@ Before trying to run any of these scripts, create the `build` directory in the p
 │   ├── nature.jpg
 │   └── nature.png
 ├── include
-|   ├── image.hpp
-|   ├── kernel.hpp
-|   ├── paint.hpp
+│   ├── image.hpp
+│   ├── kernal.hpp
+│   ├── paint.cpp
+│   ├── parameters.hpp
+│   └── stroke.cpp
 ├── out
 │   ├── paint-cherry-blossom.png
 │   ├── paint-cool-cat.png
@@ -32,18 +34,19 @@ Before trying to run any of these scripts, create the `build` directory in the p
 │   └── paint-nature.png
 ├── scripts
 │   ├── clean.sh
-│   ├── make-run.sh
 │   ├── make.sh
+│   ├── make-run.sh
 │   └── run.sh
 └── src
     ├── image.cpp
     ├── kernal.cpp
     ├── main.cpp
-    └── paint.cpp
+    ├── paint.cpp
+    └── stroke.cpp
 ```
 
 Use the following scripts in the *root directory* for simple usage.
 * `scripts/make.sh`: Builds the project
-* `scripts/run.sh`: Runs the program on all the images in `imgs`
-* `scripts/make-run.sh`: Builds and runs the project
+* `scripts/run.sh image.png`: Runs the program on `imgs/image.png` and saves the output as `out/paint-image.png`
+* `scripts/make-run.sh image.png`: Builds and runs the program on `imgs/image.png` and saves the output as `out/paint-image.png`
 * `scripts/clean.sh`: Removes the created build files

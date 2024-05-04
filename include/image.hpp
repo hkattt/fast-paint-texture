@@ -30,14 +30,38 @@ class Image {
     public:
         Image() : width(0), height(0) {}
 
+        /**
+         * Constructor for Image. 
+         * 
+         * Creates an image with a constant colour. 
+         * 
+         * @param width: width of the image
+         * @param height: height of the image
+         * @param colour: colour to set the image to
+        */
+        Image(int width, int height, Eigen::Vector3f colour) {
+            this->width = width;
+            this->height = height;
+            cv::Mat image(height, width, CV_8UC3, cv::Scalar(colour.z(), colour.y(), colour.x()));
+            this->image = image;
+        }
+
         Image(int width, int height, cv::Mat image) {
             this->width = width;
             this->height = height;
             this->image = image;
         }
 
+        int get_width() {
+            return this->width;
+        }
+
+        int get_height() {
+            return this->height;
+        }
+
         cv::Mat get_image() {
-            return image;
+            return this->image;
         }
 
         /**
@@ -57,9 +81,9 @@ class Image {
          * 
          * @param kernel: Gaussian kernel 
          * 
-         * @return: Matrix representing the blurred image
+         * @return: Blurred image
         */
-        cv::Mat gaussian_blur(const GaussianKernel *kernel);
+        Image gaussian_blur(const GaussianKernel *kernel);
 
         /**
          * Computes the gradient of the image at the given point
@@ -72,5 +96,17 @@ class Image {
          * @return: Tuple containing the gradient (gx, gy) and the magnitude of the gradient
         */
         std::tuple<Eigen::Vector2f, float> compute_gradient(int x, int y, HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y);
+
+        /**
+         * @return: The average pixel colour of the image
+        */
+        Eigen::Vector3f average_colour();
+
+        /**
+         * Computes the difference between the image and the compare_image
+         * 
+         * @return: Matrix containing the difference betweene each pixel
+        */
+        cv::Mat difference(Image *compare_image);
 };
 

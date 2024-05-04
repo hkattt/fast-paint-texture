@@ -3,7 +3,5 @@ cd build
 cmake ..
 make
 
-# Run on all the images
-./fast-paint-texture cherry-blossom.png paint-cherry-blossom.png
-./fast-paint-texture cool-cat.png paint-cool-cat.png
-./fast-paint-texture nature.png paint-nature.png
+# Run on input image
+./fast-paint-texture $1 paint-$1
