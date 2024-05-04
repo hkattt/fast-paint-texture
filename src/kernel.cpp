@@ -1,15 +1,15 @@
 #include <math.h>
+#include <stdexcept>
 
 #include "kernel.hpp"
-#include <stdexcept>
 
 using namespace std;
 
-Kernel::Kernel(int len, float sigma) {
+GaussianKernel::GaussianKernel(int len, float sigma) {
     float value, sum;
 
     this->len = len;
-    this->cached_values.resize(len * len);
+    this->values.resize(len * len);
 
     // Centre of the kernel window
     int centre = (len - 1) / 2;
@@ -25,7 +25,7 @@ Kernel::Kernel(int len, float sigma) {
             value =  std::exp(-(std::pow(i - centre, 2) + std::pow(j - centre, 2)) / (2 * std::pow(sigma, 2))) / factor;
             
             // Caches the value
-            this->cached_values[j * len + i] = value;
+            this->values[j * len + i] = value;
 
             sum += value;
         }
@@ -33,9 +33,25 @@ Kernel::Kernel(int len, float sigma) {
     // Normalise the cached values - the values should sum to 1
     for (int j = 0; j < len; j++) {
         for (int i = 0; i < len; i++) {
-            this->cached_values[j * len + i] /= sum;
+            this->values[j * len + i] /= sum;
         }
     }
+}
+
+HorizontalSobelKernel::HorizontalSobelKernel() {
+    this->values = {
+        1, 0, -1, 
+        2, 0, -2, 
+        1, 0, -1
+    };
+}
+
+VerticalSobelKernel::VerticalSobelKernel() {
+    this->values = {
+        1, 2, 1, 
+        0, 0, 0, 
+        -1, -2, -1
+    };
 }
 
 float Kernel::get_value(int x, int y) const {
@@ -44,5 +60,5 @@ float Kernel::get_value(int x, int y) const {
             "Invalid argument: (" + std::to_string(x) + ", " + std::to_string(y) + ") for kernel with length: " + std::to_string(len)
         );
     }
-    return this->cached_values[x * len + y];
+    return this->values[x * len + y];
 }

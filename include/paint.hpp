@@ -18,12 +18,7 @@ class Paint {
 
         std::vector<Eigen::Vector3f> frame_buf;
         std::vector<float> depth_buf;
-
-        /** ---------- Image Processing Parameters ---------- */
-
-        int min_brush_size = 2;     // Smallest brush radius
-        float blur_factor = 2;      // Radius of blurring in reference image to brush radius
-        
+       
         int get_index(int x, int y);
         
         void set_pixel(const Vector2i& point, const Eigen::Vector3f& color);

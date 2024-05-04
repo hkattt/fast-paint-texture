@@ -3,18 +3,19 @@
 #include <vector>
 
 /**
- * Gaussian kernel object class
+ * Anstract Kernel class
 */
 class Kernel {
-    private:
+    protected:
         // Length of the kernel window (i.e. it is a len by len grid)
         int len;
-        // Computed values of the Gaussian Kernel
-        std::vector<float> cached_values;
+        // Stores kernel values
+        std::vector<float> values;
 
     public:
-        Kernel(int len, float sigma);
-
+        /**
+         * @return The length of the kernel window 
+        */    
         int get_len() const {
             return this->len;
         }
@@ -27,3 +28,48 @@ class Kernel {
         */
         float get_value(int x, int y) const;
 };
+
+/**
+ * Concrete Gaussian Kernel class
+*/
+class GaussianKernel : public Kernel {
+    public:
+        GaussianKernel(int len, float sigma);
+};
+
+/**
+ * Abstract Sobel Kernel class
+*/
+class SobelKernel : public Kernel {};
+
+/**
+ * Concrete Horizontal Sobel Kernel
+ * Implements the Singelton design pattern.
+*/
+class HorizontalSobelKernel : public SobelKernel {
+    private:
+        HorizontalSobelKernel();
+        
+    public:
+        static HorizontalSobelKernel& get_instance() {
+            static HorizontalSobelKernel instance;
+            return instance;
+        }
+};
+
+/**
+ * Concrete Vertical Sobel Kernel
+ * Implements the Singelton design pattern
+*/
+class VerticalSobelKernel : public SobelKernel {
+    private:
+        VerticalSobelKernel();
+
+    public:
+        static VerticalSobelKernel& get_instance() {
+            static VerticalSobelKernel instance;
+            return instance;
+        }
+};
+
+
