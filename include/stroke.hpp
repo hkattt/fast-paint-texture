@@ -14,6 +14,8 @@ class Stroke {
         std::vector<Eigen::Vector2i> control_points;
 
     public:
+        Stroke() {}
+
         /**
          * Constructor for Stroke. 
          * 
@@ -28,5 +30,12 @@ class Stroke {
          * @param ref_image: reference image 
          * @param canvas: canvas image - where the stroke will be drawn
         */
-        Stroke(int x, int y, float radius, Image ref_image, Image canvas);
+        Stroke(int x, int y, float radius, Image *ref_image, Image *canvas);
+
+        /**
+         * Renders the stroke onto a image canvas.
+         * 
+         * @param canvas: cancas image - where the stroke will be drawn
+        */
+        void render_to_image(Image *canvas);
 };

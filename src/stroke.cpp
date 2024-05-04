@@ -1,13 +1,13 @@
 #include "stroke.hpp"
-#include "parameters.h"
+#include "parameters.hpp"
 
-Stroke::Stroke(int x, int y, float radius, Image ref_image, Image canvas) {
+Stroke::Stroke(int x, int y, float radius, Image *ref_image, Image *canvas) {
     Eigen::Vector2f d, g, last;
     Eigen::Vector3f ref_pixel, canvas_pixel;
     float grad_mag;
 
     // Set the colour and radius of the stroke
-    this->colour = ref_image.get_pixel(x, y);
+    this->colour = ref_image->get_pixel(x, y);
     this->radius = radius;
 
     // Add first control point
@@ -17,19 +17,19 @@ Stroke::Stroke(int x, int y, float radius, Image ref_image, Image canvas) {
     HorizontalSobelKernel sobel_x = HorizontalSobelKernel::get_instance();
     VerticalSobelKernel sobel_y = VerticalSobelKernel::get_instance();
 
-    d = Vector2f();
-    last = Vector2f(0);
+    d = Vector2f::Zero();
+    last = Vector2f::Zero();
 
     for (int i = 0; i < ProgramParameters::max_stroke_length; i++) {
-        ref_pixel = ref_image.get_pixel(x, y);
-        canvas_pixel = canvas.get_pixel(x, y);
+        ref_pixel = ref_image->get_pixel(x, y);
+        canvas_pixel = canvas->get_pixel(x, y);
 
         if (i > ProgramParameters::min_stroke_length && (ref_pixel - canvas_pixel).norm() < (ref_pixel - this->colour).norm()) {
             return;
         }
         
         // Get the unit vector of gradient (gx, gy) and gradient magnitutde
-        std::tie<Eigen::Vector2f, float>(g, grad_mag) = ref_image.compute_gradient(x, y, &sobel_x, &sobel_y);
+        std::tie<Eigen::Vector2f, float>(g, grad_mag) = ref_image->compute_gradient(x, y, &sobel_x, &sobel_y);
         
         // Detect vanishing gradient
         // TODO: Use epsilon maybe?
@@ -61,4 +61,9 @@ Stroke::Stroke(int x, int y, float radius, Image ref_image, Image canvas) {
         // Add the new control point
         this->control_points.push_back(Eigen::Vector2i(x, y));
     }   
+}
+
+void Stroke::render_to_image(Image *canvas) {
+    // TODO: Complete
+    return;
 }

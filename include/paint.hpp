@@ -23,6 +23,18 @@ class Paint {
         
         void set_pixel(const Vector2i& point, const Eigen::Vector3f& color);
 
+        /**
+         * Paints a layer onto the canvas.
+         * 
+         * Implements the paintLayer psuedo-code from Painterly Rendering with Curved Brush 
+         * Strokes of Multiple Sizes by Aaron Hertzmann.
+         * 
+         * @param ref_image: Reference (target) image
+         * @param canvas: Canvas to paint the image onto
+         * @param radius: Radius of the brush stroke
+        */
+        void paint_layer(Image *ref_image, Image *canvas, int radius);
+
     public:
         /**
          * Constructor for Paint.
@@ -34,9 +46,14 @@ class Paint {
         Paint(int width, int height, cv::Mat source_image);
 
         /**
-         * Performs the fast-paint-texture algorithm on the source image
+         * Paints the source image onto the canvas.
+         * 
+         * Implements the paint psuedo-code from Painterly Rendering with Curved Brush 
+         * Strokes of Multiple Sizes by Aaron Hertzmann.
+         * 
+         * @return: Painted image
         */
-        cv::Mat paint();
+        Image paint();
 
         std::vector<Eigen::Vector3f>& frame_buffer() {
             return frame_buf;

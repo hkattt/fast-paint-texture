@@ -34,6 +34,8 @@ class Kernel {
 */
 class GaussianKernel : public Kernel {
     public:
+        GaussianKernel() {}
+        
         GaussianKernel(int len, float sigma);
 };
 
