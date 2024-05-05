@@ -54,7 +54,7 @@ Image Paint::paint() {
         ref_image = this->source_image.gaussian_blur(&kernel);
 
         // Paint a layer
-        //this->paint_layer(&ref_image, &canvas, brush_radius);
+        this->paint_layer(&ref_image, &canvas, brush_radius);
     }
     return canvas;
 }
@@ -83,6 +83,11 @@ void Paint::paint_layer(Image *ref_image, Image *canvas, int radius) {
                 for (int i = -(grid / 2); i < (grid / 2); i++) {
                     diff_x = x + i;
                     diff_y = y + j;
+
+                    // Checks if coordinates are valid
+                    if (diff_x < 0 || diff_x > this->width || diff_y < 0 || diff_y > this->height) {
+                        continue;
+                    }
 
                     current_diff = differences.at<float>(diff_y, diff_x);
 
