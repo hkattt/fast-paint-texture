@@ -17,8 +17,9 @@ Paint::Paint(int width, int height, cv::Mat source_image) {
     
     this->width = width;
     this->height = height;
-    this->frame_buf.resize(width * height);
-    this->depth_buf.resize(width * height);
+
+    this->frame_buf.resize(width * height); // TODO: DELETE
+    
     this->source_image = new Image(width, height, source_image);
 }
 

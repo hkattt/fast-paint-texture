@@ -16,8 +16,7 @@ class Paint {
 
         Image *source_image;
        
-        std::vector<Eigen::Vector3f> frame_buf;
-        std::vector<float> depth_buf;
+        std::vector<Eigen::Vector3f> frame_buf; // TODO: DELETE
 
         /**
          * Paints a layer onto the canvas.
