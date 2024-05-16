@@ -15,7 +15,7 @@ class Paint {
         int width, height;
 
         Image *source_image;
-
+       
         std::vector<Eigen::Vector3f> frame_buf;
         std::vector<float> depth_buf;
        
@@ -31,6 +31,7 @@ class Paint {
          * 
          * @param ref_image: Reference (target) image
          * @param canvas: Canvas to paint the image onto
+         * @param height_map: Height map of the image
          * @param radius: Radius of the brush stroke
         */
         void paint_layer(Image *ref_image, Image *canvas, int radius);

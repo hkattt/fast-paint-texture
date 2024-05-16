@@ -201,12 +201,14 @@ void Image::render_stroke_point(int x, int y, int z, AntiAliasedCircle *mask) {
                 this->old_colours[ind] = get_pixel(new_x, new_y);
                 this->total_mask[ind] = alpha;
                 this->set_pixel(new_x, new_y, this->alpha_blend(this->cur_colour, this->old_colours[ind], alpha));
+                this->set_height(new_x, new_y, this->compose_height(new_x, new_y));
                 this->z_buffer[ind] = z;
             } 
             else {
                 if (this->total_mask[ind] < alpha) {
                     this->total_mask[ind] = alpha;
                     this->set_pixel(new_x, new_y, this->alpha_blend(this->cur_colour, this->old_colours[ind], alpha));
+                    this->set_height(new_x, new_y, this->compose_height(new_x, new_y));
                     this->z_buffer[ind] = z;
                 }
             }

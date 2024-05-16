@@ -8,8 +8,6 @@
 
 using namespace std;
 
-/** PUBLIC METHODS */
-
 Paint::Paint(int width, int height, cv::Mat source_image) {
     // Ensure dimensions are valid
     if (source_image.cols != width || source_image.rows != height) {
@@ -41,6 +39,7 @@ Image* Paint::paint() {
     }
 
     canvas->make_flags();
+    canvas->init_height_map();
     
     for (int brush_radius : brushes) {
         std::cout << "Painting layer with brush radius: " << brush_radius << std::endl;

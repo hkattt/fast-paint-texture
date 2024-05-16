@@ -12,6 +12,8 @@ int main(int argc, const char **argv) {
     // Name of the input and output image files
     std::string input_file;
     std::string output_file;
+    // Name of the height map output file
+    std::string output_height_file;
     // Path to the input and output image directories
     std::string input_path = "../imgs/";
     std::string output_path = "../out/";
@@ -34,6 +36,8 @@ int main(int argc, const char **argv) {
         return 1;
     }
 
+    output_height_file = "height-" + output_file;
+
     // Load input image with colour
     cv::Mat input_image =  cv::imread(input_path + input_file, cv::IMREAD_COLOR);
     if (input_image.empty()) {
@@ -48,9 +52,12 @@ int main(int argc, const char **argv) {
 
     // Paint the image and save the output file
     Image *output_image = paint.paint();
-    cv::imwrite(output_path + output_file, output_image->get_image());
 
-    cout << "Result saved to: " << output_path + output_file << std::endl;
+    cv::imwrite(output_path + output_file, output_image->get_image());
+    cout << "Image saved to: " << output_path + output_file << std::endl;
+
+    cv::imwrite(output_path + output_height_file, output_image->get_height_map());
+    cout << "Height map saved to: " << output_path + output_height_file << std::endl;
 
     // Free memory
     delete output_image;

@@ -18,6 +18,8 @@ class Image {
         int width, height;
         // Matrix representing the image
         cv::Mat image;
+        // Matrix representing the image height map
+        cv::Mat height_map;
 
         // Arrays used for stroke drawing
         int *counters = nullptr;
@@ -44,8 +46,25 @@ class Image {
             this->image.at<cv::Vec3b>(y, x) = cv::Vec3b(c.z(), c.y(), c.x());
         }
 
+        void set_height(int x, int y, float h) {
+            // Note that cv::Vec3b stores (BGR) values
+            this->height_map.at<uchar>(y, x) = (uchar) h;
+        }
+
         Eigen::Vector3f alpha_blend(Eigen::Vector3f c1, Eigen::Vector3f c2, float alpha) {
             return (alpha * c1 + (1 - alpha) * c2).cwiseMin(255.0f).cwiseMax(0.0f);
+        }
+
+        float alpha_blend(float h1, float h2, float alpha) {
+            return std::clamp(alpha * h1 + (1 - alpha) * h2, 0.0f, 255.0f);
+        }
+
+        float compose_height(int x, int y) {
+            float stroke_height = 1.0f; // TODO: Make this not constant
+            float alpha = 0.5f; // TODO: Get this from somewhere else
+
+            float height_blend = this->alpha_blend(stroke_height, this->get_height(x, y), alpha);
+            return height_blend + 0.001f * this->cur_counter;
         }
 
         void render_stroke_point(int x, int y, int z, AntiAliasedCircle *mask);
@@ -98,6 +117,15 @@ class Image {
             return this->image;
         }
 
+        cv::Mat get_height_map() {
+            return this->height_map;
+        }
+
+        void init_height_map() {
+            cv::Mat height_map(this->height, this->width, CV_8UC1, cv::Scalar(0));
+            this->height_map = height_map;
+        }
+
         /**
          * @param x: x-coordinate of the pixel
          * @param y: y-coordinate of the pixel
@@ -108,6 +136,16 @@ class Image {
             cv::Vec3b pixel = image.at<cv::Vec3b>(y, x);
             // Note that cv::Vec3b stores (BGR) values
             return Eigen::Vector3f(pixel[2], pixel[1], pixel[0]);
+        }
+
+        /**
+         * @param x: x-coordinate of the height
+         * @param y: y-coordinate of the height
+         * 
+         * @return: Height at (x, y) represented 
+        */
+        float get_height(int x, int y) {
+            return height_map.at<cv::Scalar>(y, x)[0];
         }
 
         void make_flags();
