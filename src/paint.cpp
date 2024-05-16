@@ -129,20 +129,3 @@ void Paint::paint_layer(Image *ref_image, Image *canvas, int radius) {
     // Free memory
     delete differences;
 }
-
-cv::Mat Paint::to_image() {
-    cv::Mat image(height, width, CV_32FC3, frame_buf.data());
-    image.convertTo(image, CV_8UC3, 1.0f);
-    return image;
-}
-
-/** PRIVATE METHODS */
-
-int Paint::get_index(int x, int y) {
-    return (y * width) + x;
-}
-
-void Paint::set_pixel(const Vector2i &point, const Eigen::Vector3f &color) {
-    int ind = get_index(point.x(), point.y());
-    frame_buf[ind] = color;
-}

@@ -18,10 +18,6 @@ class Paint {
        
         std::vector<Eigen::Vector3f> frame_buf;
         std::vector<float> depth_buf;
-       
-        int get_index(int x, int y);
-        
-        void set_pixel(const Vector2i& point, const Eigen::Vector3f& color);
 
         /**
          * Paints a layer onto the canvas.
@@ -62,19 +58,4 @@ class Paint {
          * @return: Painted image. This image must be freed
         */
         Image* paint();
-
-        std::vector<Eigen::Vector3f>& frame_buffer() {
-            return frame_buf;
-        }
-
-        std::vector<float>& depth_buffer() {
-            return depth_buf;
-        }
-
-        /**
-         * Converts the frame buffer to an OpenCV image.
-         * 
-         * @return cv::Mat The OpenCV image
-        */
-        cv::Mat to_image();
 };
