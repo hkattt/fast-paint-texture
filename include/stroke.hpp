@@ -7,14 +7,49 @@
 
 using namespace Eigen;
 
+class Image;
+
 class Stroke {
     private:
         float radius;
         Eigen::Vector3f colour;
-        std::vector<Eigen::Vector2i> control_points;
+        std::vector<Eigen::Vector2f> control_points;
+        std::vector<Eigen::Vector2f> limit;
+
+        // Angle threshold - used to ensure smooth interpolation
+        const double theta_tol = 0.1;
+        // Distance threshold - used to ensure smooth interpolation
+        const int neighbourhood = 2;
+        const bool clean = false;
+
+        /**
+         * Determines if the limit has been completed.
+         * Removes redundant points from the limit if needed.
+        */
+        bool limit_is_done();
+
+        /**
+         * Performs cubic b-spline interpolation on the control points
+         * The interpolated points are stored in the limit vector
+        */
+        void compute_limit_curve();
 
     public:
         Stroke() {}
+
+        /**
+         * @return: The limit of the Stroke. Computes the limit if needed
+        */
+        std::vector<Eigen::Vector2f> get_limit() {
+            if (this->limit.size() == 0) {
+                compute_limit_curve();
+            }
+            return this->limit;
+        }
+
+        Eigen::Vector3f get_colour() {
+            return this->colour;
+        }
 
         /**
          * Constructor for Stroke. 
@@ -31,11 +66,4 @@ class Stroke {
          * @param canvas: canvas image - where the stroke will be drawn
         */
         Stroke(int x, int y, float radius, Image *ref_image, Image *canvas);
-
-        /**
-         * Renders the stroke onto a image canvas.
-         * 
-         * @param canvas: cancas image - where the stroke will be drawn
-        */
-        void render_to_image(Image *canvas);
 };

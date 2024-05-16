@@ -47,10 +47,13 @@ int main(int argc, const char **argv) {
     Paint paint(input_image.cols, input_image.rows, input_image);
 
     // Paint the image and save the output file
-    Image output_image = paint.paint();
-    cv::imwrite(output_path + output_file, output_image.get_image());
+    Image *output_image = paint.paint();
+    cv::imwrite(output_path + output_file, output_image->get_image());
 
     cout << "Result saved to: " << output_path + output_file << std::endl;
+
+    // Free memory
+    delete output_image;
 
     return 0;
 }
