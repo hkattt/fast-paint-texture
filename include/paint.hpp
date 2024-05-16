@@ -14,7 +14,7 @@ class Paint {
         // Dimensions of the image
         int width, height;
 
-        Image source_image;
+        Image *source_image;
 
         std::vector<Eigen::Vector3f> frame_buf;
         std::vector<float> depth_buf;
@@ -46,14 +46,21 @@ class Paint {
         Paint(int width, int height, cv::Mat source_image);
 
         /**
+         * Destructor for Paint.
+        */
+        ~Paint() {
+            delete source_image;
+        }
+
+        /**
          * Paints the source image onto the canvas.
          * 
          * Implements the paint psuedo-code from Painterly Rendering with Curved Brush 
          * Strokes of Multiple Sizes by Aaron Hertzmann.
          * 
-         * @return: Painted image
+         * @return: Painted image. This image must be freed
         */
-        Image paint();
+        Image* paint();
 
         std::vector<Eigen::Vector3f>& frame_buffer() {
             return frame_buf;

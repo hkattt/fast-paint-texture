@@ -16,5 +16,11 @@ namespace ProgramParameters {
 
     const float grid_fac = 1.0f;                    // Radius of grid spacing to brush radius
 
+    const float length_fac = 1.0f;
+
     const int threshold = 100;                      // How much error to allow before painting over
+
+    const float aa = 0.1f;                          // Size of the fall-off region for anti-alaising brush strokes
+
+    const bool random_stroke_order = false;         // If true, randomise stroke order
 }

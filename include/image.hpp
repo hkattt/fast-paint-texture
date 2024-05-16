@@ -3,8 +3,11 @@
 #include <Eigen/Eigen>
 
 #include "kernel.hpp"
+#include "stroke.hpp"
 
 using namespace Eigen;
+
+class Stroke;
 
 /**
  * Image class to implement image-processing functionality
@@ -15,6 +18,15 @@ class Image {
         int width, height;
         // Matrix representing the image
         cv::Mat image;
+
+        // Arrays used for stroke drawing
+        int *counters = nullptr;
+        Eigen::Vector3f *old_colours = nullptr;
+        int *z_buffer = nullptr;
+        float *total_mask = nullptr;
+
+        int cur_counter = 0;
+        Eigen::Vector3f cur_colour;
 
         /**
          * Convolves the given pixel using the Gaussian kernel.
@@ -27,8 +39,30 @@ class Image {
         */
         cv::Vec3b convolve(int row, int col, const GaussianKernel *kernel);
 
+        void set_pixel(int x, int y, Eigen::Vector3f c) {
+            // Note that cv::Vec3b stores (BGR) values
+            this->image.at<cv::Vec3b>(y, x) = cv::Vec3b(c.z(), c.y(), c.x());
+        }
+
+        Eigen::Vector3f alpha_blend(Eigen::Vector3f c1, Eigen::Vector3f c2, float alpha) {
+            return (alpha * c1 + (1 - alpha) * c2).cwiseMin(255.0f).cwiseMax(0.0f);
+        }
+
+        void render_stroke_point(int x, int y, int z, AntiAliasedCircle *mask);
+
+        void render_stroke_line(int x1, int y1, int x2, int y2, int z, AntiAliasedCircle *mask);
+
     public:
         Image() : width(0), height(0) {}
+
+        ~Image() {
+            if (this->counters != nullptr) {
+                delete[] counters;
+                delete[] old_colours;
+                delete[] z_buffer;
+                delete[] total_mask;
+            }
+        }
 
         /**
          * Constructor for Image. 
@@ -76,6 +110,10 @@ class Image {
             return Eigen::Vector3f(pixel[2], pixel[1], pixel[0]);
         }
 
+        void make_flags();
+
+        void clear_z();
+
         /**
          * Performs blurring using colvolution with the provided Gaussian kernel
          * 
@@ -83,7 +121,7 @@ class Image {
          * 
          * @return: Blurred image
         */
-        Image gaussian_blur(const GaussianKernel *kernel);
+        Image* gaussian_blur(const GaussianKernel *kernel);
 
         /**
          * Computes the gradient of the image at the given point
@@ -107,6 +145,15 @@ class Image {
          * 
          * @return: Matrix containing the difference betweene each pixel
         */
-        cv::Mat difference(Image *compare_image);
+        cv::Mat* difference(Image *compare_image);
+
+        /**
+         * Renders a stroke onto the image
+         * 
+         * @param stroke: Stroke to be drawn onto the image
+         * @param mask: Anti-aliased circle kernel used to draw stroke
+         * @param z: Depth of the stroke (usually 0)
+        */
+        void render_stroke(Stroke *stroke, AntiAliasedCircle *mask, int z);
 };
 
