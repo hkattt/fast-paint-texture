@@ -100,13 +100,13 @@ class RGBImage {
         /**
          * Convolves the given pixel using the Gaussian kernel.
          * 
-         * @param row: row index of the pixel
-         * @param col: colum index of the pixel
+         * @param x: x-coordiante of the pixel
+         * @param col: y-coordinate of the pixel
          * @param kernel: Gaussian kernel
          * 
          * @returns: Convovled pixel
         */
-        Eigen::Vector3f convolve(int row, int col, const GaussianKernel *kernel);
+        Eigen::Vector3f convolve(int x, int y, const GaussianKernel *kernel);
 
     public:
         RGBImage() : width(0), height(0) {}
