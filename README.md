@@ -6,7 +6,7 @@ Implementing and extending (hopefully) Aaron Hertzmann's [fast paint texture alg
 ## Usage
 The program has the following usage
 ```
-./fast-paint-texture (input image) (output image)
+./fast-paint-texture (input image)
 ```
 
 ## Scripts
@@ -14,32 +14,40 @@ Before trying to run any of these scripts, create the `build` directory in the p
 
 ```
 ├── CMakeLists.txt
-├── README.md
-├── build
+├── height
+│   ├── height-cherry-blossom.png
+│   ├── height-cool-cat.png
+│   ├── height-nature.png
+│   ├── height-reis.png
+│   └── height-star-wars.png
 ├── imgs
 │   ├── cherry-blossom.png
 │   ├── cool-cat.png
-│   ├── nature.jpg
-│   └── nature.png
+│   ├── nature.png
+│   ├── reis.png
+│   └── star-wars.png
 ├── include
-│   ├── image.hpp
-│   ├── kernal.hpp
-│   ├── paint.cpp
-│   ├── parameters.hpp
-│   └── stroke.cpp
-├── out
+│   ├── debug.hpp
+│   ├── image.hpp
+│   ├── kernel.hpp
+│   ├── paint.hpp
+│   ├── parameters.hpp
+│   └── stroke.hpp
+├── paint
 │   ├── paint-cherry-blossom.png
 │   ├── paint-cool-cat.png
-│   ├── paint-nature.jpg
-│   └── paint-nature.png
+│   ├── paint-nature.png
+│   ├── paint-reis.png
+│   └── paint-star-wars.png
+├── README.md
 ├── scripts
 │   ├── clean.sh
-│   ├── make.sh
 │   ├── make-run.sh
+│   ├── make.sh
 │   └── run.sh
 └── src
     ├── image.cpp
-    ├── kernal.cpp
+    ├── kernel.cpp
     ├── main.cpp
     ├── paint.cpp
     └── stroke.cpp
@@ -47,6 +55,6 @@ Before trying to run any of these scripts, create the `build` directory in the p
 
 Use the following scripts in the *root directory* for simple usage.
 * `scripts/make.sh`: Builds the project
-* `scripts/run.sh image.png`: Runs the program on `imgs/image.png` and saves the output as `out/paint-image.png`
-* `scripts/make-run.sh image.png`: Builds and runs the program on `imgs/image.png` and saves the output as `out/paint-image.png`
+* `scripts/run.sh image.png`: Runs the program on `imgs/image.png` and saves the output as `paint/paint-image.png` and `height/height-image.png`
+* `scripts/make-run.sh image.png`: Builds and runs the program on `imgs/image.png` and saves the output as `paint/paint-image.png` and `height/height-image.png`
 * `scripts/clean.sh`: Removes the created build files

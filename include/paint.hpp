@@ -14,11 +14,18 @@ class Paint {
         // Dimensions of the image
         int width, height;
 
-        Image *source_image;
-       
-        std::vector<Eigen::Vector3f> frame_buf; // TODO: DELETE
+        RGBImage *source_image;
 
+        // Arrays used for stroke drawing 
+        int *counters = nullptr;
+        Eigen::Vector3f *old_colours = nullptr;
+        float *total_mask = nullptr;
+
+        int cur_counter = 0;
+        Eigen::Vector3f cur_colour; 
+        
         /**
+         * TODO: Update
          * Paints a layer onto the canvas.
          * 
          * Implements the paintLayer psuedo-code from Painterly Rendering with Curved Brush 
@@ -29,7 +36,15 @@ class Paint {
          * @param height_map: Height map of the image
          * @param radius: Radius of the brush stroke
         */
-        void paint_layer(Image *ref_image, Image *canvas, int radius);
+        void paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height_map, int radius);
+
+        float compose_height(float h);
+
+        void render_stroke(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, AntiAliasedCircle *mask);
+
+        void render_stroke_point(RGBImage *canvas, GrayImage *height_map, int x, int y, AntiAliasedCircle *mask);
+
+        void render_stroke_line(RGBImage *canvas, GrayImage *height_map, int x1, int y1, int x2, int y2, AntiAliasedCircle *mask);
 
     public:
         /**
@@ -46,15 +61,14 @@ class Paint {
         */
         ~Paint() {
             delete source_image;
+            delete[] counters;
+            delete[] old_colours;
+            delete[] total_mask;
         }
 
-        /**
-         * Paints the source image onto the canvas.
-         * 
-         * Implements the paint psuedo-code from Painterly Rendering with Curved Brush 
-         * Strokes of Multiple Sizes by Aaron Hertzmann.
-         * 
-         * @return: Painted image. This image must be freed
-        */
-        Image* paint();
+        RGBImage *get_source_image() {
+            return this->source_image;
+        }
+
+        std::tuple<RGBImage*, GrayImage*> paint();
 };

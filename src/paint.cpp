@@ -17,21 +17,24 @@ Paint::Paint(int width, int height, cv::Mat source_image) {
     
     this->width = width;
     this->height = height;
+    this->source_image = new RGBImage(width, height, source_image);
 
-    this->frame_buf.resize(width * height); // TODO: DELETE
-    
-    this->source_image = new Image(width, height, source_image);
+    this->counters = new int[width * height];
+    this->total_mask = new float[width * height];
+    this->old_colours = new Eigen::Vector3f[width * height];
 }
 
-Image* Paint::paint() {
+std::tuple<RGBImage*, GrayImage*> Paint::paint() {
     int brushes[ProgramParameters::num_layers];
-    Image *canvas, *ref_image;
+    RGBImage *canvas, *ref_image;
+    GrayImage *height_map;
     GaussianKernel kernel;
     float sigma;
     int kernel_len;
 
     // Create the painting canvas
-    canvas = new Image(width, height, this->source_image->average_colour());
+    canvas = new RGBImage(width, height, this->source_image->average_colour());
+    height_map = new GrayImage(width, height, 0.0f);
 
     // Create brushes (from largest to smallest)
     brushes[ProgramParameters::num_layers - 1] = ProgramParameters::min_brush_size;
@@ -39,8 +42,12 @@ Image* Paint::paint() {
         brushes[i] = 2 * brushes[i + 1];
     }
 
-    canvas->make_flags();
-    canvas->init_height_map();
+    // TODO: Move elsewhere?
+    std::fill_n(this->counters, width * height, 0);
+    std::fill_n(this->old_colours, width * height, canvas->get_pixel(0, 0));
+    std::fill_n(this->total_mask, width * height, 0.0f);
+    // TODO: Move elsewhere?
+    this->cur_counter = 0;
     
     for (int brush_radius : brushes) {
         std::cout << "Painting layer with brush radius: " << brush_radius << std::endl;
@@ -56,18 +63,18 @@ Image* Paint::paint() {
         ref_image = this->source_image->gaussian_blur(&kernel);
 
         // Paint a layer
-        this->paint_layer(ref_image, canvas, brush_radius);
+        this->paint_layer(ref_image, canvas, height_map, brush_radius);
 
         // Free memory
         delete ref_image;
     }
-    return canvas;
+    return std::tuple<RGBImage*, GrayImage*>(canvas, height_map);
 }
 
-void Paint::paint_layer(Image *ref_image, Image *canvas, int radius) {
+void Paint::paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height_map, int radius) {
     std::vector<Stroke> strokes;
-    cv::Mat *differences;
-    int grid, max_x, max_y, z;
+    GrayImage *differences;
+    int grid, max_x, max_y;
     float area_error, max_diff, current_diff;
 
     // Compute the difference between the reference image and the canvas
@@ -78,9 +85,7 @@ void Paint::paint_layer(Image *ref_image, Image *canvas, int radius) {
 
     grid = std::max((int) ProgramParameters::grid_fac * radius, 1);
 
-    canvas->clear_z();
-
-    for (int y = 0; y < this->width; y += grid) {
+    for (int y = 0; y < this->height; y += grid) {
         for (int x = 0; x < this->width; x+= grid) {
             // Reset area error, maximum difference, and maximum difference coordiantes
             area_error = 0.0f;
@@ -91,11 +96,11 @@ void Paint::paint_layer(Image *ref_image, Image *canvas, int radius) {
             for (int j = y - (grid / 2); j <= y + (grid / 2); j++) {
                 for (int i = x -(grid / 2); i <= x + (grid / 2); i++) {
                     // Checks if coordinates are valid
-                    if (i < 0 || i > this->width || j < 0 || j > this->height) {
+                    if (i < 0 || i >= this->width || j < 0 || j >= this->height) {
                         continue;
                     }
 
-                    current_diff = differences->at<float>(j, i);
+                    current_diff = differences->get_pixel(i, j); // TODO: Fix index
 
                     // Sum the error ear (x, y)
                     area_error += current_diff;
@@ -121,12 +126,115 @@ void Paint::paint_layer(Image *ref_image, Image *canvas, int radius) {
 
     // Render the strokes to the canvas
     for (Stroke stroke : strokes) {
-        //z = ProgramParameters::random_stroke_order ?  std::rand() % 1000 : 0;
-        // TODO: Should z be something random?
-        z = 0;
-        canvas->render_stroke(&stroke, &brush, z);
+        this->render_stroke(canvas, height_map, &stroke, &brush);
     }
 
     // Free memory
     delete differences;
+}
+
+// TODO: Move this into the GrayImage class?
+float Paint::compose_height(float h) {
+    float stroke_height = 1.0f; // TODO: Make this not constant
+    float alpha = 0.5f; // TODO: Get this from somewhere else
+
+    float height_blend = ImageUtil::alpha_blend(stroke_height, h, alpha);
+    return height_blend + 0.001f * this->cur_counter;
+}
+
+void Paint::render_stroke(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, AntiAliasedCircle *mask) {
+    std::vector<Eigen::Vector2f> limit = stroke->get_limit();
+
+    this->cur_counter++;
+    this->cur_colour = stroke->get_colour();
+
+    if (limit.size() == 1) {
+        this->render_stroke_point(canvas, height_map, limit[0].x(), limit[0].y(), mask);
+        return;
+    }
+
+    for (int i = 0; i < limit.size() - 1; i++) {
+        this->render_stroke_line(canvas, height_map, limit[i].x(), limit[i].y(), limit[i + 1].x(), limit[i + 1].y(), mask);
+    }
+}
+
+void Paint::render_stroke_point(RGBImage *canvas, GrayImage *height_map, int x, int y, AntiAliasedCircle *mask) {
+    int new_x, new_y, ind;
+    float alpha, composed_height;
+    Eigen::Vector3f blended_colour;
+
+
+    for (int j = 0; j < mask->get_len(); j++) {
+        for (int i = 0; i < mask->get_len(); i++) {
+            new_x = x + i - mask->get_centre_x();
+            new_y = y + j - mask->get_centre_y();
+
+            // Checks if the coordinates are valid
+            if (new_x < 0 || new_x >= this->width || new_y < 0 || new_y >= this->height) {
+                continue;
+            }
+
+            alpha = mask->get_value(i, j);
+
+            ind = new_y * this->width + new_x;
+
+            if (this->counters[ind] < this->cur_counter) {
+                this->counters[ind] = this->cur_counter;
+                this->old_colours[ind] = canvas->get_pixel(new_x, new_y);
+                this->total_mask[ind] = alpha;
+                
+                blended_colour = ImageUtil::alpha_blend(this->cur_colour, this->old_colours[ind], alpha);
+                canvas->set_pixel(new_x, new_y, blended_colour);
+
+                composed_height = this->compose_height(height_map->get_pixel(new_x, new_y));
+                height_map->set_pixel(new_x, new_y, composed_height);
+            } 
+            else {
+                if (this->total_mask[ind] < alpha) {
+                    this->total_mask[ind] = alpha;
+                    
+                    blended_colour = ImageUtil::alpha_blend(this->cur_colour, this->old_colours[ind], alpha);
+                    canvas->set_pixel(new_x, new_y, blended_colour);
+
+                    composed_height = this->compose_height(height_map->get_pixel(new_x, new_y));
+                    height_map->set_pixel(new_x, new_y, composed_height);
+                }
+            }
+        }
+    }
+}
+
+void Paint::render_stroke_line(RGBImage *canvas, GrayImage *height_map, int x1, int y1, int x2, int y2, AntiAliasedCircle *mask) {
+    int xa, xb, ya, yb;
+    float m, y;
+
+    if (x1 == x2) {
+        ya = std::min(y1, y2);
+        yb = std::max(y1, y2);
+
+        for (int y = ya; y < yb; y++) {
+            this->render_stroke_point(canvas, height_map, x1, y, mask);
+        }
+    } 
+    else {
+        if (x1 < x2) {
+            xa = x1;
+            xb = x2;
+            ya = y1;
+            yb = y2;
+        }
+        else {
+            xa = x2;
+            xb = x1;
+            ya = y2;
+            yb = y1;
+        }
+        m = ((float) yb - ya) / (xb - xa);
+        y = ya;
+
+        for (int x = xa; x <= xb; x++) {
+            this->render_stroke_point(canvas, height_map, x, y, mask);
+            y += m;
+        }
+    }
 }

@@ -4,4 +4,4 @@ cmake ..
 make
 
 # Run on input image
-./fast-paint-texture $1 paint-$1
+./fast-paint-texture $1

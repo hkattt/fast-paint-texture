@@ -4,7 +4,7 @@
  * Parameters that control the painting style
 */
 namespace ProgramParameters {
-    const int num_layers = 3;                       // Number of brushes
+    const int num_layers = 1;                       // Number of brushes
     const int min_brush_size = 2;                   // Smallest brush radius
 
     const int min_stroke_length = 4;                // Minimum stroke length (number of control points)

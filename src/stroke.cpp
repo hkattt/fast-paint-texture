@@ -2,7 +2,7 @@
 #include "parameters.hpp"
 #include "debug.hpp"
 
-Stroke::Stroke(int x0, int y0, float radius, Image *ref_image, Image *canvas) {
+Stroke::Stroke(int x0, int y0, float radius, RGBImage *ref_image, RGBImage *canvas) {
     Eigen::Vector2f d, g, last;
     Eigen::Vector3f ref_pixel, canvas_pixel, new_pixel;
     float grad_mag;
@@ -60,7 +60,7 @@ Stroke::Stroke(int x0, int y0, float radius, Image *ref_image, Image *canvas) {
         y = y + length * d.y();
 
         // Ensure the control point is valid
-        if (x < 0 || x > ref_image->get_width() || y < 0 || y > ref_image->get_height()) {
+        if (x < 0 || x >= ref_image->get_width() || y < 0 || y >= ref_image->get_height()) {
             return;
         }
 
