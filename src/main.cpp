@@ -9,34 +9,31 @@ using namespace std;
 using namespace Eigen;
 
 int main(int argc, const char **argv) {
-    // Name of the input and output image files
+    // Name of the input file, paint file (output) and the height file (output)
     std::string input_file;
-    std::string output_file;
-    // Name of the height map output file
-    std::string output_height_file;
+    std::string paint_file;
+    std::string height_file;
     // Path to the input and output image directories
     std::string input_path = "../imgs/";
-    std::string output_path = "../out/";
+    std::string paint_path = "../paint/";
+    std::string height_path = "../height/";
 
     // No arguments provided
-    if (argc < 3) {
-        std::cout << "Usage: fast-paint-texture (input file) (output file)"
-                  << std::endl;
+    if (argc < 2) {
+        std::cout << "Usage: fast-paint-texture (input file)" << std::endl;
         return 1;
     } 
-    // Input file and output file provided
-    else if (argc == 3) {
+    // Input file provided
+    else if (argc == 2) {
         input_file = argv[1];
-        output_file = argv[2];
     }
-    // More than two arguments provided
+    // More than one arguments provided
     else {
-        std::cout << "Too many arguments provided"
-                  << std::endl;
+        std::cout << "Too many arguments provided" << std::endl;
         return 1;
     }
-
-    output_height_file = "height-" + output_file;
+    paint_file = "paint-" + input_file;
+    height_file = "height-" + input_file;
 
     // Load input image with colour
     cv::Mat input_image =  cv::imread(input_path + input_file, cv::IMREAD_COLOR);
@@ -50,17 +47,26 @@ int main(int argc, const char **argv) {
     // Create a Paint instance for the input image
     Paint paint(input_image.cols, input_image.rows, input_image);
 
-    // Paint the image and save the output file
-    Image *output_image = paint.paint();
+    // Paint the input image
+    RGBImage *output_image;
+    GrayImage *output_height_map;
+    std::tie<RGBImage*, GrayImage*>(output_image, output_height_map) = paint.paint();
 
-    cv::imwrite(output_path + output_file, output_image->get_image());
-    cout << "Image saved to: " << output_path + output_file << std::endl;
+    // Save the painted image
+    cv::Mat *cv_output_image = output_image->to_cv_mat();
+    cv::imwrite(paint_path + paint_file, *cv_output_image);
+    cout << "Image saved to: " << paint_path + paint_file << std::endl;
 
-    cv::imwrite(output_path + output_height_file, output_image->get_height_map());
-    cout << "Height map saved to: " << output_path + output_height_file << std::endl;
+    // Save the height map
+    cv::Mat *cv_output_height_map = output_height_map->to_cv_mat();
+    cv::imwrite(height_path + height_file, *cv_output_height_map);
+    cout << "Height map saved to: " << height_path + height_file << std::endl;
 
     // Free memory
     delete output_image;
+    delete output_height_map;
+    delete cv_output_image;
+    delete cv_output_height_map;
 
     return 0;
 }

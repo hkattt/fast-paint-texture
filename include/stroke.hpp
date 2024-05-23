@@ -7,7 +7,7 @@
 
 using namespace Eigen;
 
-class Image;
+class RGBImage;
 
 class Stroke {
     private:
@@ -65,5 +65,5 @@ class Stroke {
          * @param ref_image: reference image 
          * @param canvas: canvas image - where the stroke will be drawn
         */
-        Stroke(int x, int y, float radius, Image *ref_image, Image *canvas);
+        Stroke(int x, int y, float radius, RGBImage *ref_image, RGBImage *canvas);
 };
