@@ -2,7 +2,7 @@
 #include "parameters.hpp"
 #include "debug.hpp"
 
-Stroke::Stroke(int x0, int y0, float radius, RGBImage *ref_image, RGBImage *canvas) {
+Stroke::Stroke(int x0, int y0, float radius, RGBImage *ref_image, RGBImage *canvas, GrayImage *luminosity) {
     Eigen::Vector2f d, g, last;
     Eigen::Vector3f ref_pixel, canvas_pixel, new_pixel;
     float grad_mag;
@@ -31,7 +31,7 @@ Stroke::Stroke(int x0, int y0, float radius, RGBImage *ref_image, RGBImage *canv
         canvas_pixel = canvas->get_pixel(x, y);
         
         // Get the unit vector of gradient (gx, gy) and gradient magnitutde
-        std::tie<Eigen::Vector2f, float>(g, grad_mag) = ref_image->compute_gradient(x, y, &sobel_x, &sobel_y);
+        std::tie<Eigen::Vector2f, float>(g, grad_mag) = luminosity->compute_gradient(x, y, &sobel_x, &sobel_y);
         
         // Gradient is too small
         if (length * grad_mag < 1) {
@@ -73,7 +73,7 @@ Stroke::Stroke(int x0, int y0, float radius, RGBImage *ref_image, RGBImage *canv
 
         // Add the new control point
         this->control_points.push_back(Eigen::Vector2f(x, y));
-    }   
+    }
 }
 
 bool Stroke::limit_is_done() {

@@ -58,6 +58,37 @@ cv::Mat *GrayImage::to_cv_mat() {
     return cv_image;
 }
 
+std::tuple<Eigen::Vector2f, float> GrayImage::compute_gradient(int x, int y, HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y) {
+    Eigen::Vector2f grad = Eigen::Vector2f::Zero();
+    Eigen::Vector3f pixel;
+    float grad_mag, intensity;
+    int image_x, image_y;
+
+    for (int j = 0; j < sobel_x->get_len(); j++) {
+        for (int i = 0; i < sobel_x->get_len(); i++) {
+            // Image x and y coordinates of the current pixel
+            image_x = x + i - sobel_x->get_centre_x();
+            image_y = y + j - sobel_x->get_centre_y();
+
+            // Checks if the coordinates are valid
+            if (image_x < 0 || image_x >= this->width || image_y < 0 || image_y >= this->height) {
+                continue;
+            }
+
+            intensity = get_pixel(image_x, image_y);
+            
+            // Compute gradient
+            grad[0] += intensity * sobel_x->get_value(i, j);
+            grad[1] += intensity * sobel_y->get_value(i, j);
+        }
+    }
+    grad.normalize();
+    // Compute the magnitude of the gradient
+    grad_mag = grad.norm();
+
+    return std::tuple<Eigen::Vector2f, float>(grad, grad_mag);
+}
+
 RGBImage::RGBImage(int width, int height, Eigen::Vector3f colour) {
     this->width = width;
     this->height = height;
@@ -151,39 +182,20 @@ Eigen::Vector3f RGBImage::convolve(int x, int y, const GaussianKernel *kernel) {
     return Eigen::Vector3f(blurred_r, blurred_g, blurred_b);
 }
 
-std::tuple<Eigen::Vector2f, float> RGBImage::compute_gradient(int x, int y, HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y) {
-    Eigen::Vector2f grad = Eigen::Vector2f::Zero();
+GrayImage *RGBImage::luminosity() {
+    GrayMatrix *luminosity = new GrayMatrix(this->height, this->width);
+    
     Eigen::Vector3f pixel;
-    float grad_mag, intensity;
-    int image_x, image_y;
+    for (int y = 0; y < this->height; y++) {
+        for (int x = 0; x < this->width; x++) {
+            pixel = get_pixel(x, y);
 
-    for (int j = 0; j < sobel_x->get_len(); j++) {
-        for (int i = 0; i < sobel_x->get_len(); i++) {
-            // Image x and y coordinates of the current pixel
-            image_x = x + i - sobel_x->get_centre_x();
-            image_y = y + j - sobel_x->get_centre_y();
-
-            // Checks if the coordinates are valid
-            if (image_x < 0 || image_x >= this->width || image_y < 0 || image_y >= this->height) {
-                continue;
-            }
-
-            pixel = get_pixel(image_x, image_y);
-            
             // Compute the intensity of the current pixel
             // The constants reflect how sensitive the human-eye is to each colour channel
-            intensity = 0.2989 * pixel.x() + 0.5870 * pixel.y() + 0.1140 * pixel.z();
-
-            // Compute gradient
-            grad[0] += intensity * sobel_x->get_value(i, j);
-            grad[1] += intensity * sobel_y->get_value(i, j);
+            ImageUtil::set_pixel(luminosity, x, y, 0.2989 * pixel.x() + 0.5870 * pixel.y() * 0.1140 * pixel.z());
         }
     }
-    grad.normalize();
-    // Compute the magnitude of the gradient
-    grad_mag = grad.norm();
-
-    return std::tuple<Eigen::Vector2f, float>(grad, grad_mag);
+    return new GrayImage(this->width, this->height, luminosity);
 }
 
 Eigen::Vector3f RGBImage::average_colour() {

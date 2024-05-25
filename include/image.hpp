@@ -88,6 +88,18 @@ class GrayImage {
         }
 
         cv::Mat *to_cv_mat();
+
+        /**
+         * Computes the gradient of the image at the given point
+         * 
+         * @param x: x-coordinate 
+         * @param y: y-coordinate
+         * @param sobel_x: Horizontal sobel kernel
+         * @param sobel_y: Vertical sobel kernel
+         * 
+         * @return: Tuple containing the gradient (gx, gy) and the magnitude of the gradient
+        */
+        std::tuple<Eigen::Vector2f, float> compute_gradient(int x, int y, HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y);
 };
 
 class RGBImage {
@@ -171,19 +183,7 @@ class RGBImage {
          * 
          * @return: Blurred image
         */
-        RGBImage* gaussian_blur(const GaussianKernel *kernel);
-
-        /**
-         * Computes the gradient of the image at the given point
-         * 
-         * @param x: x-coordinate 
-         * @param y: y-coordinate
-         * @param sobel_x: Horizontal sobel kernel
-         * @param sobel_y: Vertical sobel kernel
-         * 
-         * @return: Tuple containing the gradient (gx, gy) and the magnitude of the gradient
-        */
-        std::tuple<Eigen::Vector2f, float> compute_gradient(int x, int y, HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y);
+        RGBImage *gaussian_blur(const GaussianKernel *kernel);
 
         /**
          * @return: The average pixel colour of the image
@@ -196,5 +196,7 @@ class RGBImage {
          * @return: Matrix containing the difference betweene each pixel
         */
         GrayImage* difference(RGBImage *compare_image);
+
+        GrayImage *luminosity();
 };
 

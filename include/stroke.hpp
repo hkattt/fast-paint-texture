@@ -8,6 +8,7 @@
 using namespace Eigen;
 
 class RGBImage;
+class GrayImage;
 
 class Stroke {
     private:
@@ -64,6 +65,7 @@ class Stroke {
          * @param radius: radius of the stroke
          * @param ref_image: reference image 
          * @param canvas: canvas image - where the stroke will be drawn
+         * @param luminosity: luminosity of the reference image. Used to compute image gradients
         */
-        Stroke(int x, int y, float radius, RGBImage *ref_image, RGBImage *canvas);
+        Stroke(int x, int y, float radius, RGBImage *ref_image, RGBImage *canvas, GrayImage *luminosity);
 };

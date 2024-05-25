@@ -73,12 +73,15 @@ std::tuple<RGBImage*, GrayImage*> Paint::paint() {
 
 void Paint::paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height_map, int radius) {
     std::vector<Stroke> strokes;
-    GrayImage *differences;
+    GrayImage *differences, *luminosity;
     int grid, max_x, max_y;
     float area_error, max_diff, current_diff;
 
     // Compute the difference between the reference image and the canvas
     differences = ref_image->difference(canvas);
+
+    // Compute the luminosity of the reference image. Used to compute image gradients
+    luminosity = ref_image->luminosity();
 
     // Brush mask
     AntiAliasedCircle brush = AntiAliasedCircle(radius, ProgramParameters::aa * radius);
@@ -115,11 +118,15 @@ void Paint::paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height
             }
             // It is cheaper to check this than dividing area_error by grid * grid
             if (area_error > ProgramParameters::threshold * grid * grid) {
-                Stroke stroke = Stroke(max_x, max_y, radius, ref_image, canvas);
+                Stroke stroke = Stroke(max_x, max_y, radius, ref_image, canvas, luminosity);
                 strokes.push_back(stroke);
             }
         }
     }
+    // Free memory
+    delete differences;
+    delete luminosity;
+
     // Shuffle the strokes
     // TODO: Figure out why we can't shuffle the strokes??
     //std::random_shuffle(strokes.begin(), strokes.end());
@@ -127,10 +134,7 @@ void Paint::paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height
     // Render the strokes to the canvas
     for (Stroke stroke : strokes) {
         this->render_stroke(canvas, height_map, &stroke, &brush);
-    }
-
-    // Free memory
-    delete differences;
+    }    
 }
 
 // TODO: Move this into the GrayImage class?
