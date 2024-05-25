@@ -3,6 +3,7 @@
 #include <Eigen/Eigen>
 
 #include "image.hpp"
+#include "shader.hpp"
 
 using namespace Eigen;
 
@@ -71,4 +72,6 @@ class Paint {
         }
 
         std::tuple<RGBImage*, GrayImage*> paint();
+
+        RGBImage *apply_lighting(RGBImage *image, GrayImage *height_map, Shader *shader, Eigen::Vector3f view_pos, Eigen::Vector3f light_pos);
 };

@@ -2,6 +2,7 @@
 
 #include "paint.hpp"
 #include "image.hpp"
+#include "shader.hpp"
 #include "kernel.hpp"
 #include "stroke.hpp"
 #include "parameters.hpp"
@@ -69,6 +70,31 @@ std::tuple<RGBImage*, GrayImage*> Paint::paint() {
         delete ref_image;
     }
     return std::tuple<RGBImage*, GrayImage*>(canvas, height_map);
+}
+
+RGBImage *Paint::apply_lighting(RGBImage *image, GrayImage *height_map, Shader *shader, Eigen::Vector3f view_pos, Eigen::Vector3f light_pos) {
+    // Sobel kernels used to compute image gradient
+    HorizontalSobelKernel sobel_x = HorizontalSobelKernel::get_instance();
+    VerticalSobelKernel sobel_y = VerticalSobelKernel::get_instance();
+    RGBImage *normals = height_map->compute_normals(&sobel_x, &sobel_y);
+
+    Eigen::Vector3f pos;
+    Eigen::Vector3f new_colour;
+
+    RGBMatrix *shaded_image = new RGBMatrix(this->height, this->width);
+
+    for (int y = 0; y < this->height; y++) {
+        for (int x = 0; x < this->width; x++) {
+            pos = Eigen::Vector3f(x, y, 0);
+            new_colour = shader->shade(image->get_pixel(x, y), pos, light_pos, view_pos, normals->get_pixel(x, y));
+            ImageUtil::set_pixel(shaded_image, x, y, new_colour);
+        }
+    }
+
+    // Free memory
+    delete normals;
+    
+    return new RGBImage(this->width, this->height, shaded_image);
 }
 
 void Paint::paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height_map, int radius) {

@@ -89,6 +89,27 @@ std::tuple<Eigen::Vector2f, float> GrayImage::compute_gradient(int x, int y, Hor
     return std::tuple<Eigen::Vector2f, float>(grad, grad_mag);
 }
 
+RGBImage *GrayImage::compute_normals(HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y) {
+    Eigen::Vector3f normal;
+    Eigen::Vector2f grad;
+    float grad_mag;
+
+    RGBMatrix *normals = new RGBMatrix(this->height, this->width);
+
+    for (int y = 0; y < this->height; y++) {
+        for (int x = 0; x < this->width; x++) {
+            // Get the unit vector of gradient (gx, gy) and gradient magnitutde (unused)
+            std::tie<Eigen::Vector2f, float>(grad, grad_mag) = this->compute_gradient(x, y, sobel_x, sobel_y);
+
+            normal = Eigen::Vector3f(-grad.x(), -grad.y(), 1).normalized();
+
+            ImageUtil::set_pixel(normals, x, y, normal);
+        }
+    }
+    
+    return new RGBImage(this->width, this->height, normals);
+}
+
 RGBImage::RGBImage(int width, int height, Eigen::Vector3f colour) {
     this->width = width;
     this->height = height;

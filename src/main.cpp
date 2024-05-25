@@ -4,15 +4,14 @@
 #include <Eigen/Dense>
 
 #include "paint.hpp"
+#include "shader.hpp"
 
 using namespace std;
 using namespace Eigen;
 
 int main(int argc, const char **argv) {
-    // Name of the input file, paint file (output) and the height file (output)
-    std::string input_file;
-    std::string paint_file;
-    std::string height_file;
+    // Name of the input file, shade file (final output), paint file (output),and the height file (output)
+    std::string input_file, shade_file, paint_file, height_file;
     // Path to the input and output image directories
     std::string input_path = "../imgs/";
     std::string paint_path = "../paint/";
@@ -33,6 +32,7 @@ int main(int argc, const char **argv) {
         return 1;
     }
     paint_file = "paint-" + input_file;
+    shade_file = "shade-" + input_file;
     height_file = "height-" + input_file;
 
     // Load input image with colour
@@ -52,6 +52,17 @@ int main(int argc, const char **argv) {
     GrayImage *output_height_map;
     std::tie<RGBImage*, GrayImage*>(output_image, output_height_map) = paint.paint();
 
+    // Shade the output image
+    BlinnPhongShader shader = BlinnPhongShader();
+    Eigen::Vector3f view_pos = Eigen::Vector3f(input_image.cols / 2, input_image.rows / 2, 5);
+    Eigen::Vector3f light_pos = Eigen::Vector3f(input_image.cols / 2, input_image.rows / 2, 5);
+    RGBImage *shaded_image = paint.apply_lighting(output_image, output_height_map, &shader, view_pos, light_pos);
+
+    // Save the shaded image
+    cv::Mat *cv_output_shaded_image = shaded_image->to_cv_mat();
+    cv::imwrite(paint_path + shade_file, *cv_output_shaded_image);
+    cout << "Shaded image saved to: " << paint_path + shade_file << std::endl;
+
     // Save the painted image
     cv::Mat *cv_output_image = output_image->to_cv_mat();
     cv::imwrite(paint_path + paint_file, *cv_output_image);
@@ -65,8 +76,12 @@ int main(int argc, const char **argv) {
     // Free memory
     delete output_image;
     delete output_height_map;
+
     delete cv_output_image;
     delete cv_output_height_map;
+    
+    delete shaded_image;
+    delete cv_output_shaded_image;
 
     return 0;
 }

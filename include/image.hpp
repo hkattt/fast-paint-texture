@@ -26,6 +26,8 @@ namespace ImageUtil {
     float alpha_blend(float h1, float h2, float alpha);
 }
 
+class RGBImage;
+
 class GrayImage {
     private:
         // Dimensions of the image
@@ -100,6 +102,8 @@ class GrayImage {
          * @return: Tuple containing the gradient (gx, gy) and the magnitude of the gradient
         */
         std::tuple<Eigen::Vector2f, float> compute_gradient(int x, int y, HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y);
+
+        RGBImage *compute_normals(HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y);
 };
 
 class RGBImage {
