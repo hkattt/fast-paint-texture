@@ -93,7 +93,7 @@ RGBImage *Paint::apply_lighting(RGBImage *image, GrayImage *height_map, Shader *
 
     // Free memory
     delete normals;
-    
+
     return new RGBImage(this->width, this->height, shaded_image);
 }
 
@@ -160,6 +160,13 @@ void Paint::paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height
     // Render the strokes to the canvas
     for (Stroke stroke : strokes) {
         this->render_stroke(canvas, height_map, &stroke, &brush);
+
+        #ifdef ANIMATE
+            cv::Mat *cv_canvas = canvas->to_cv_mat();
+            cv::imshow("canvas", *cv_canvas);
+            cv::waitKey(10);
+            delete cv_canvas;
+        #endif
     }    
 }
 

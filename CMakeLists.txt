@@ -7,6 +7,14 @@ set(CMAKE_BUILD_TYPE Release)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+# Set default value for ANIMATE option
+option(ANIMATE "Enable animation" OFF)
+
+# Check if ANIMATE option is enabled
+if (ANIMATE)
+    add_definitions(-DANIMATE)
+endif()
+
 include_directories(${EIGEN3_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS}, include)
 
 # Source files

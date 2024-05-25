@@ -44,6 +44,10 @@ int main(int argc, const char **argv) {
 
     cout << "Loaded: " << input_file <<  " (" << input_image.cols << "x" << input_image.rows << ")" << ::endl;
 
+    #ifdef ANIMATE
+        std::cout << "Running in animation mode" << std::endl;
+    #endif
+
     // Create a Paint instance for the input image
     Paint paint(input_image.cols, input_image.rows, input_image);
 
