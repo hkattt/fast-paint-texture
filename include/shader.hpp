@@ -12,6 +12,10 @@ class Shader {
 };
 
 class BlinnPhongShader : public Shader {
+    private:
+        // Specular exponent
+        float p = 25.0f;
+        
     public:
         BlinnPhongShader() = default;
 

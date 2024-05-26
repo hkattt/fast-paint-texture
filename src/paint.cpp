@@ -164,7 +164,7 @@ void Paint::paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height
         #ifdef ANIMATE
             cv::Mat *cv_canvas = canvas->to_cv_mat();
             cv::imshow("canvas", *cv_canvas);
-            cv::waitKey(10);
+            cv::waitKey(1);
             delete cv_canvas;
         #endif
     }    
