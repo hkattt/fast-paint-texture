@@ -11,10 +11,6 @@ float Texture::get_texture_value(Eigen::Vector2f uv_coords) {
     int y0 = std::floor(y);
     int y1 = std::min(y0 + 1, this->get_height());
 
-    // TODO: Delete
-    //std::cout << "width: " << this->get_width() << " height: " << this->get_height() << std::endl;
-    // std::cout << "x0: " << x0 << " y0: " << y0 << " x1: " << x1 << " y1: " << y1 << std::endl;
-
     float bot_left_val  = this->texture->get_pixel(x0, y0);
     float bot_right_val = this->texture->get_pixel(x1, y0);
 

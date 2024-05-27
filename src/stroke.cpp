@@ -239,17 +239,27 @@ void Stroke::compute_bounding_box(int width, int height) {
 }
 
 float Stroke::get_height(int x, int y) {
+    // Default (constant height)
+    if (this->height_texture == nullptr) {
+        return 1.0f;
+    }
+
     // Convert (x, y) coordinate to (u, v) coordinates based on bounding box
     Eigen::Vector2f uv_coords = this->get_uv_coords(x, y);
 
     // Return the height value from the height texture
-    return (this->height_texture != nullptr ) ? this->height_texture->get_texture_value(uv_coords) : 1.0f;
+    return this->height_texture->get_texture_value(uv_coords);
 }
 
 float Stroke::get_opacity(int x, int y) {
+    // Default (constant opacity)
+    if (this->opacity_texture == nullptr) {
+        return 125.0f;
+    }
+
     // Convert (x, y) coordinate to (u, v) coordinates based on bounding box
     Eigen::Vector2f uv_coords = this->get_uv_coords(x, y);
 
     // Return the height value from the height texture
-    return (this->opacity_texture != nullptr) ? this->opacity_texture->get_texture_value(uv_coords) : 0.5f;
+    return this->opacity_texture->get_texture_value(uv_coords);
 }

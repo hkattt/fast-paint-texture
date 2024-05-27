@@ -170,21 +170,19 @@ void Paint::paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height
     for (Stroke stroke : strokes) {
         this->render_stroke(canvas, height_map, &stroke, &brush);
 
-        #ifdef ANIMATE
-            cv::Mat *cv_canvas = canvas->to_cv_mat();
-            cv::imshow("canvas", *cv_canvas);
-            cv::waitKey(1);
-            delete cv_canvas;
-        #endif
+        // #ifdef ANIMATE
+        //     cv::Mat *cv_canvas = canvas->to_cv_mat();
+        //     cv::imshow("canvas", *cv_canvas);
+        //     cv::waitKey(1);
+        //     delete cv_canvas;
+        // #endif
     }    
 }
 
 // TODO: Move this into the GrayImage class?
 float Paint::compose_height(float stroke_height, float stroke_opacity, float current_height) {
-    // float stroke_height = 1.0f; // TODO: Make this not constant
-    // float alpha = 0.5f; // TODO: Get this from somewhere else
+    float height_blend = ImageUtil::alpha_blend(stroke_height, current_height, stroke_opacity / 255);
 
-    float height_blend = ImageUtil::alpha_blend(stroke_height, current_height, stroke_opacity);
     return height_blend + 0.001f * this->cur_counter;
 }
 

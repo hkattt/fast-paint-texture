@@ -52,6 +52,7 @@ int main(int argc, const char **argv) {
         return -1;
     }
     Texture *height_texture = new Texture(height_texture_image.cols, height_texture_image.rows, height_texture_image);
+    //Texture *height_texture = nullptr;
 
     cv::Mat opacity_texture_image = cv::imread(texture_path + "opacity.png", cv::IMREAD_GRAYSCALE);
     if (opacity_texture_image.empty()) {
@@ -74,8 +75,8 @@ int main(int argc, const char **argv) {
 
     // Shade the output image
     BlinnPhongShader shader = BlinnPhongShader();
-    Eigen::Vector3f view_pos = Eigen::Vector3f(input_image.cols / 2, input_image.rows / 2, 5);
-    Eigen::Vector3f light_pos = Eigen::Vector3f(input_image.cols / 2, input_image.rows / 2, 5);
+    Eigen::Vector3f view_pos = Eigen::Vector3f(input_image.cols / 2, input_image.rows / 2, 300);
+    Eigen::Vector3f light_pos = Eigen::Vector3f(input_image.cols / 2, input_image.rows / 2, 300);
     RGBImage *shaded_image = paint.apply_lighting(output_image, output_height_map, &shader, view_pos, light_pos);
 
     // Save the shaded image
@@ -93,6 +94,22 @@ int main(int argc, const char **argv) {
     cv::imwrite(height_path + height_file, *cv_output_height_map);
     cout << "Height map saved to: " << height_path + height_file << std::endl;
 
+    #ifdef ANIMATE
+        view_pos = Eigen::Vector3f(input_image.cols / 2, input_image.rows / 2, 5);
+        for (int i = 0; i < input_image.cols; i++) {
+            light_pos = Eigen::Vector3f(i, 0, 300);
+            shaded_image = paint.apply_lighting(output_image, output_height_map, &shader, view_pos, light_pos);
+            cv_output_shaded_image = shaded_image->to_cv_mat();
+            
+            cv::imshow("shaded_image", *cv_output_shaded_image);
+
+            cv::waitKey(1);
+
+            delete shaded_image;
+            delete cv_output_shaded_image;
+        }
+    #endif
+
     // Free memory
     delete output_image;
     delete output_height_map;
@@ -103,8 +120,8 @@ int main(int argc, const char **argv) {
     delete shaded_image;
     delete cv_output_shaded_image;
 
-    delete height_texture;
-    delete opacity_texture;
+    if (height_texture != nullptr) delete height_texture;
+    if (opacity_texture != nullptr) delete opacity_texture;
 
     return 0;
 }

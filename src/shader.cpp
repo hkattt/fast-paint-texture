@@ -3,7 +3,7 @@
 Eigen::Vector3f BlinnPhongShader::shade(Eigen::Vector3f colour, Eigen::Vector3f pos, Eigen::Vector3f light_pos, Eigen::Vector3f view_pos, Eigen::Vector3f normal) {
     float ka = 0.1f;
     float kd = 0.6f;
-    float ks = 0.8f;
+    float ks = 0.3f;
 
     Eigen::Vector3f amb_intensity = Eigen::Vector3f(1.0f, 1.0f, 1.0f);
     Eigen::Vector3f intensity = Eigen::Vector3f(1.0f, 1.0f, 1.0f);
