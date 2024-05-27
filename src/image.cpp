@@ -43,6 +43,23 @@ GrayImage::GrayImage(int width, int height, float colour) {
     this->image = image;
 }
 
+GrayImage::GrayImage(int width, int height, cv::Mat cv_image) {
+    this->width = width;
+    this->height = height;
+
+    GrayMatrix *image = new GrayMatrix(height, width);
+
+    uchar pixel;
+    for (int row = 0; row < cv_image.rows; row++) {
+        for (int col = 0; col < cv_image.cols; col++) {
+            pixel = cv_image.at<uchar>(row, col);
+            
+            ImageUtil::set_pixel(image, col, row, static_cast<float>(pixel));
+        } 
+    }
+    this->image = image;
+}
+
 cv::Mat *GrayImage::to_cv_mat() {
     cv::Mat *cv_image = new cv::Mat(this->height, this->width, CV_8UC1);
 
@@ -51,7 +68,6 @@ cv::Mat *GrayImage::to_cv_mat() {
         for (int x = 0; x < this->width; x++) {
             pixel = this->get_pixel(x, y);
 
-            // cv::Vec3b stores BGR values
             (*cv_image).at<uchar>(y, x) = static_cast<uchar>(pixel);
         } 
     }

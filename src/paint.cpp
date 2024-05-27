@@ -9,7 +9,7 @@
 
 using namespace std;
 
-Paint::Paint(int width, int height, cv::Mat source_image) {
+Paint::Paint(int width, int height, cv::Mat source_image, Texture *height_texture, Texture *opacity_texture) {
     // Ensure dimensions are valid
     if (source_image.cols != width || source_image.rows != height) {
         throw std::invalid_argument("Unable to create rasterizer: input image dimensions \
@@ -23,6 +23,9 @@ Paint::Paint(int width, int height, cv::Mat source_image) {
     this->counters = new int[width * height];
     this->total_mask = new float[width * height];
     this->old_colours = new Eigen::Vector3f[width * height];
+
+    this->height_texture = height_texture;
+    this->opacity_texture = opacity_texture;
 }
 
 std::tuple<RGBImage*, GrayImage*> Paint::paint() {
@@ -145,6 +148,12 @@ void Paint::paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height
             // It is cheaper to check this than dividing area_error by grid * grid
             if (area_error > ProgramParameters::threshold * grid * grid) {
                 Stroke stroke = Stroke(max_x, max_y, radius, ref_image, canvas, luminosity);
+
+                stroke.compute_bounding_box(canvas->get_width(), canvas->get_height());
+
+                stroke.set_height_texture(this->height_texture);
+                stroke.set_opacity_texture(this->opacity_texture);
+                
                 strokes.push_back(stroke);
             }
         }
@@ -171,31 +180,31 @@ void Paint::paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height
 }
 
 // TODO: Move this into the GrayImage class?
-float Paint::compose_height(float h) {
-    float stroke_height = 1.0f; // TODO: Make this not constant
-    float alpha = 0.5f; // TODO: Get this from somewhere else
+float Paint::compose_height(float stroke_height, float stroke_opacity, float current_height) {
+    // float stroke_height = 1.0f; // TODO: Make this not constant
+    // float alpha = 0.5f; // TODO: Get this from somewhere else
 
-    float height_blend = ImageUtil::alpha_blend(stroke_height, h, alpha);
+    float height_blend = ImageUtil::alpha_blend(stroke_height, current_height, stroke_opacity);
     return height_blend + 0.001f * this->cur_counter;
 }
 
 void Paint::render_stroke(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, AntiAliasedCircle *mask) {
     std::vector<Eigen::Vector2f> limit = stroke->get_limit();
 
-    this->cur_counter++;
-    this->cur_colour = stroke->get_colour();
+    this->cur_counter++; // TODO: Does this need to be global
+    this->cur_colour = stroke->get_colour(); // TODO: Is this really needed if we are passing color
 
     if (limit.size() == 1) {
-        this->render_stroke_point(canvas, height_map, limit[0].x(), limit[0].y(), mask);
+        this->render_stroke_point(canvas, height_map, stroke, limit[0].x(), limit[0].y(), mask);
         return;
     }
 
     for (int i = 0; i < limit.size() - 1; i++) {
-        this->render_stroke_line(canvas, height_map, limit[i].x(), limit[i].y(), limit[i + 1].x(), limit[i + 1].y(), mask);
+        this->render_stroke_line(canvas, height_map, stroke, limit[i].x(), limit[i].y(), limit[i + 1].x(), limit[i + 1].y(), mask);
     }
 }
 
-void Paint::render_stroke_point(RGBImage *canvas, GrayImage *height_map, int x, int y, AntiAliasedCircle *mask) {
+void Paint::render_stroke_point(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, int x, int y, AntiAliasedCircle *mask) {
     int new_x, new_y, ind;
     float alpha, composed_height;
     Eigen::Vector3f blended_colour;
@@ -223,7 +232,7 @@ void Paint::render_stroke_point(RGBImage *canvas, GrayImage *height_map, int x, 
                 blended_colour = ImageUtil::alpha_blend(this->cur_colour, this->old_colours[ind], alpha);
                 canvas->set_pixel(new_x, new_y, blended_colour);
 
-                composed_height = this->compose_height(height_map->get_pixel(new_x, new_y));
+                composed_height = this->compose_height(stroke->get_height(new_x, new_y), stroke->get_opacity(new_x, new_y), height_map->get_pixel(new_x, new_y));
                 height_map->set_pixel(new_x, new_y, composed_height);
             } 
             else {
@@ -233,7 +242,7 @@ void Paint::render_stroke_point(RGBImage *canvas, GrayImage *height_map, int x, 
                     blended_colour = ImageUtil::alpha_blend(this->cur_colour, this->old_colours[ind], alpha);
                     canvas->set_pixel(new_x, new_y, blended_colour);
 
-                    composed_height = this->compose_height(height_map->get_pixel(new_x, new_y));
+                    composed_height = this->compose_height(stroke->get_height(new_x, new_y), stroke->get_opacity(new_x, new_y), height_map->get_pixel(new_x, new_y));
                     height_map->set_pixel(new_x, new_y, composed_height);
                 }
             }
@@ -241,7 +250,7 @@ void Paint::render_stroke_point(RGBImage *canvas, GrayImage *height_map, int x, 
     }
 }
 
-void Paint::render_stroke_line(RGBImage *canvas, GrayImage *height_map, int x1, int y1, int x2, int y2, AntiAliasedCircle *mask) {
+void Paint::render_stroke_line(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, int x1, int y1, int x2, int y2, AntiAliasedCircle *mask) {
     int xa, xb, ya, yb;
     float m, y;
 
@@ -250,7 +259,7 @@ void Paint::render_stroke_line(RGBImage *canvas, GrayImage *height_map, int x1, 
         yb = std::max(y1, y2);
 
         for (int y = ya; y < yb; y++) {
-            this->render_stroke_point(canvas, height_map, x1, y, mask);
+            this->render_stroke_point(canvas, height_map, stroke, x1, y, mask);
         }
     } 
     else {
@@ -270,7 +279,7 @@ void Paint::render_stroke_line(RGBImage *canvas, GrayImage *height_map, int x1, 
         y = ya;
 
         for (int x = xa; x <= xb; x++) {
-            this->render_stroke_point(canvas, height_map, x, y, mask);
+            this->render_stroke_point(canvas, height_map, stroke, x, y, mask);
             y += m;
         }
     }

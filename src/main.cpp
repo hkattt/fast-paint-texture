@@ -14,6 +14,7 @@ int main(int argc, const char **argv) {
     std::string input_file, shade_file, paint_file, height_file;
     // Path to the input and output image directories
     std::string input_path = "../imgs/";
+    std::string texture_path = "../textures/";
     std::string paint_path = "../paint/";
     std::string height_path = "../height/";
 
@@ -44,12 +45,27 @@ int main(int argc, const char **argv) {
 
     cout << "Loaded: " << input_file <<  " (" << input_image.cols << "x" << input_image.rows << ")" << ::endl;
 
+    // Load brush stroke textures
+    cv::Mat height_texture_image = cv::imread(texture_path + "height.png", cv::IMREAD_GRAYSCALE);
+    if (height_texture_image.empty()) {
+        std::cerr << "Error: Could not open the height texture" << std::endl;
+        return -1;
+    }
+    Texture *height_texture = new Texture(height_texture_image.cols, height_texture_image.rows, height_texture_image);
+
+    cv::Mat opacity_texture_image = cv::imread(texture_path + "opacity.png", cv::IMREAD_GRAYSCALE);
+    if (opacity_texture_image.empty()) {
+        std::cerr << "Error: Could not open the opacity texture" << std::endl;
+        return -1;
+    }
+    Texture *opacity_texture = new Texture(opacity_texture_image.cols, opacity_texture_image.rows, opacity_texture_image);
+
     #ifdef ANIMATE
         std::cout << "Running in animation mode" << std::endl;
     #endif
 
     // Create a Paint instance for the input image
-    Paint paint(input_image.cols, input_image.rows, input_image);
+    Paint paint(input_image.cols, input_image.rows, input_image, height_texture, opacity_texture);
 
     // Paint the input image
     RGBImage *output_image;
@@ -86,6 +102,9 @@ int main(int argc, const char **argv) {
     
     delete shaded_image;
     delete cv_output_shaded_image;
+
+    delete height_texture;
+    delete opacity_texture;
 
     return 0;
 }

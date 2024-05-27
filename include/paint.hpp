@@ -3,6 +3,7 @@
 #include <Eigen/Eigen>
 
 #include "image.hpp"
+#include "stroke.hpp"
 #include "shader.hpp"
 
 using namespace Eigen;
@@ -24,6 +25,10 @@ class Paint {
 
         int cur_counter = 0;
         Eigen::Vector3f cur_colour; 
+
+        // Textures
+        Texture *height_texture;
+        Texture *opacity_texture;
         
         /**
          * TODO: Update
@@ -39,23 +44,24 @@ class Paint {
         */
         void paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height_map, int radius);
 
-        float compose_height(float h);
+        float compose_height(float stroke_height, float stroke_opacity, float current_height);
 
         void render_stroke(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, AntiAliasedCircle *mask);
 
-        void render_stroke_point(RGBImage *canvas, GrayImage *height_map, int x, int y, AntiAliasedCircle *mask);
+        void render_stroke_point(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, int x, int y, AntiAliasedCircle *mask);
 
-        void render_stroke_line(RGBImage *canvas, GrayImage *height_map, int x1, int y1, int x2, int y2, AntiAliasedCircle *mask);
+        void render_stroke_line(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, int x1, int y1, int x2, int y2, AntiAliasedCircle *mask);
 
     public:
         /**
+         * TODO: Update?
          * Constructor for Paint.
          * 
          * @param width: The width of the rasterizer window.
          * @param height: The height of the rasterizer window.
          * @param source_image: The input image to be painted.
         */
-        Paint(int width, int height, cv::Mat source_image);
+        Paint(int width, int height, cv::Mat source_image, Texture *height_texture, Texture *opacity_texture);
 
         /**
          * Destructor for Paint.

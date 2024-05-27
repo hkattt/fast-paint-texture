@@ -1,13 +1,11 @@
 #pragma once
 
+#include <opencv2/opencv.hpp>
 #include <Eigen/Eigen>
 
 #include "kernel.hpp"
-#include "stroke.hpp"
 
 using namespace Eigen;
-
-class Stroke;
 
 typedef Eigen::Matrix<Eigen::Vector3f, Eigen::Dynamic, Eigen::Dynamic> RGBMatrix;
 typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> GrayMatrix;

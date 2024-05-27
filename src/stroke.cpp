@@ -2,7 +2,7 @@
 #include "parameters.hpp"
 #include "debug.hpp"
 
-Stroke::Stroke(int x0, int y0, float radius, RGBImage *ref_image, RGBImage *canvas, GrayImage *luminosity) {
+Stroke::Stroke(int x0, int y0, int radius, RGBImage *ref_image, RGBImage *canvas, GrayImage *luminosity) {
     Eigen::Vector2f d, g, last;
     Eigen::Vector3f ref_pixel, canvas_pixel, new_pixel;
     float grad_mag;
@@ -179,4 +179,77 @@ void Stroke::compute_limit_curve() {
             this->limit[i] = 0.25 * split[i - 1] + 0.5 * split[i] + 0.25 * split[i + 1];
         }
     }
+}
+
+Eigen::Vector2f Stroke::get_uv_coords(int x, int y) {
+    // Compute the width and height of the stroke bounding box
+    int width = this->top_right.x() - this->bottom_left.x();
+    int height = this->top_right.y() - this->bottom_left.y();
+
+    // Default u and v values (for invalid dimensions)
+    float u = 0.5f;
+    float v = 0.5f;
+
+    if (width != 0) {
+        u = (x - this->bottom_left.x()) / width;
+    }
+
+    if (height != 0) {
+        v = (y - this->bottom_left.y()) / height;
+    }
+
+    return Eigen::Vector2f(u, v);
+}
+
+void Stroke::compute_bounding_box(int width, int height) {
+    int len = this->control_points.size();
+
+    // Smallest and largest x-coordinates
+    int x_min = width;
+    int x_max = 0;
+    // Smallest and largest y-coordiantes
+    int y_min = height;
+    int y_max = 0;
+
+    int current_x_min, current_x_max, current_y_min, current_y_max;
+    for (int i = 1; i < len; i++) {
+        current_x_min = std::max((int) this->control_points[i].x() - this->radius, 0);
+        current_x_max = std::max((int) this->control_points[i].x() + this->radius, width - 1);
+
+        if (current_x_min < x_min) {
+            x_min = current_x_min;
+        }
+        if (current_x_max > x_max) {
+            x_max = current_x_max;
+        }
+
+        current_y_min = std::min((int) this->control_points[i].y() - this->radius, 0);
+        current_y_max = std::min((int) this->control_points[i].y() + this->radius, height - 1);
+
+        if (current_y_min < y_min) {
+            y_min = current_y_min;
+        }
+
+        if (current_y_max > y_max) {
+            y_max = current_y_max;
+        }
+    }
+    this->bottom_left = Eigen::Vector2i(x_min, y_min);
+    this->top_right = Eigen::Vector2i(x_max, y_max);
+}
+
+float Stroke::get_height(int x, int y) {
+    // Convert (x, y) coordinate to (u, v) coordinates based on bounding box
+    Eigen::Vector2f uv_coords = this->get_uv_coords(x, y);
+
+    // Return the height value from the height texture
+    return (this->height_texture != nullptr ) ? this->height_texture->get_texture_value(uv_coords) : 1.0f;
+}
+
+float Stroke::get_opacity(int x, int y) {
+    // Convert (x, y) coordinate to (u, v) coordinates based on bounding box
+    Eigen::Vector2f uv_coords = this->get_uv_coords(x, y);
+
+    // Return the height value from the height texture
+    return (this->opacity_texture != nullptr) ? this->opacity_texture->get_texture_value(uv_coords) : 0.5f;
 }
