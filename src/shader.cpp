@@ -1,12 +1,11 @@
 #include "shader.hpp"
 
-Eigen::Vector3f BlinnPhongShader::shade(Eigen::Vector3f colour, Eigen::Vector3f pos, Eigen::Vector3f light_pos, Eigen::Vector3f view_pos, Eigen::Vector3f normal) {
+Eigen::Vector3f BlinnPhongShader::shade(Eigen::Vector3f colour, Eigen::Vector3f pos, std::vector<Light> lights, Eigen::Vector3f view_pos, Eigen::Vector3f normal) {
     float ka = 0.1f;
     float kd = 0.6f;
     float ks = 0.3f;
 
     Eigen::Vector3f amb_intensity = Eigen::Vector3f(1.0f, 1.0f, 1.0f);
-    Eigen::Vector3f intensity = Eigen::Vector3f(1.0f, 1.0f, 1.0f);
 
     colour /= 255.0f;
 
@@ -20,19 +19,22 @@ Eigen::Vector3f BlinnPhongShader::shade(Eigen::Vector3f colour, Eigen::Vector3f 
     // View direction
     v = (view_pos - pos).normalized();
 
-    // Light direction 
-    l = (light_pos - pos).normalized();
+    for (Light light : lights) {
+        // Light direction 
+        l = (light.get_position() - pos).normalized();
 
-    // Half-vector 
-    h = (v + l).normalized();
+        // Half-vector 
+        h = (v + l).normalized();
 
-    // Diffuse lighting. Fall-off not considered
-    float N_dot_l = std::max(0.0f, normal.dot(l));
-    output_colour += kd * colour.cwiseProduct(intensity) * N_dot_l;
+        // Diffuse lighting. Fall-off not considered
+        float N_dot_l = std::max(0.0f, normal.dot(l));
+        output_colour += kd * colour.cwiseProduct(light.get_intensity()) * N_dot_l;
 
-    // Specular lighting. Fall-off not considered
-    float N_dot_h = std::max(0.0f, normal.dot(h));
-    output_colour += ks * intensity * std::pow(N_dot_h, this->p);
+        // Specular lighting. Fall-off not considered
+        float N_dot_h = std::max(0.0f, normal.dot(h));
+        output_colour += ks * light.get_intensity() * std::pow(N_dot_h, this->p);
+    }
+    output_colour /= lights.size();
 
     // Clamp the colour between [0, 1]
     output_colour.cwiseMin(1.0f).cwiseMax(0.0f);

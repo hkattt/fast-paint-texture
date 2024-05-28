@@ -7,8 +7,8 @@
 
 using namespace Eigen;
 
-typedef Eigen::Matrix<Eigen::Vector3f, Eigen::Dynamic, Eigen::Dynamic> RGBMatrix;
-typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> GrayMatrix;
+typedef Matrix<Eigen::Vector3f, Eigen::Dynamic, Eigen::Dynamic> RGBMatrix;
+typedef Matrix<float, Eigen::Dynamic, Eigen::Dynamic> GrayMatrix;
 
 namespace ImageUtil {
     float get_pixel(GrayMatrix *image, int x, int y);

@@ -5,6 +5,7 @@
 #include "image.hpp"
 #include "stroke.hpp"
 #include "shader.hpp"
+#include "light.hpp"
 
 using namespace Eigen;
 
@@ -79,5 +80,5 @@ class Paint {
 
         std::tuple<RGBImage*, GrayImage*> paint();
 
-        RGBImage *apply_lighting(RGBImage *image, GrayImage *height_map, Shader *shader, Eigen::Vector3f view_pos, Eigen::Vector3f light_pos);
+        RGBImage *apply_lighting(RGBImage *image, GrayImage *height_map, Shader *shader, Eigen::Vector3f view_pos, std::vector<Light> lights);
 };

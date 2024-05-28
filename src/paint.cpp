@@ -75,7 +75,7 @@ std::tuple<RGBImage*, GrayImage*> Paint::paint() {
     return std::tuple<RGBImage*, GrayImage*>(canvas, height_map);
 }
 
-RGBImage *Paint::apply_lighting(RGBImage *image, GrayImage *height_map, Shader *shader, Eigen::Vector3f view_pos, Eigen::Vector3f light_pos) {
+RGBImage *Paint::apply_lighting(RGBImage *image, GrayImage *height_map, Shader *shader, Eigen::Vector3f view_pos, std::vector<Light> lights) {
     // Sobel kernels used to compute image gradient
     HorizontalSobelKernel sobel_x = HorizontalSobelKernel::get_instance();
     VerticalSobelKernel sobel_y = VerticalSobelKernel::get_instance();
@@ -89,7 +89,7 @@ RGBImage *Paint::apply_lighting(RGBImage *image, GrayImage *height_map, Shader *
     for (int y = 0; y < this->height; y++) {
         for (int x = 0; x < this->width; x++) {
             pos = Eigen::Vector3f(x, y, 0);
-            new_colour = shader->shade(image->get_pixel(x, y), pos, light_pos, view_pos, normals->get_pixel(x, y));
+            new_colour = shader->shade(image->get_pixel(x, y), pos, lights, view_pos, normals->get_pixel(x, y));
             ImageUtil::set_pixel(shaded_image, x, y, new_colour);
         }
     }
