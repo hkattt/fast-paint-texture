@@ -9,7 +9,7 @@
 
 using namespace std;
 
-Paint::Paint(int width, int height, cv::Mat source_image, Texture *height_texture, Texture *opacity_texture) {
+FastPaintTexture::FastPaintTexture(int width, int height, cv::Mat source_image, Texture *height_texture, Texture *opacity_texture) {
     // Ensure dimensions are valid
     if (source_image.cols != width || source_image.rows != height) {
         throw std::invalid_argument("Unable to create rasterizer: input image dimensions \
@@ -28,7 +28,26 @@ Paint::Paint(int width, int height, cv::Mat source_image, Texture *height_textur
     this->opacity_texture = opacity_texture;
 }
 
-std::tuple<RGBImage*, GrayImage*> Paint::paint() {
+std::tuple<RGBImage*, RGBImage*, GrayImage*> FastPaintTexture::fast_paint_texture(Shader *shader) {
+    RGBImage *paint_image, *texture_image; 
+    GrayImage *height_map;
+
+    Light light1 = Light(Vector3f(this->width / 4, this->height / 4, 500), Vector3f(1.0f, 1.0f, 1.0f));
+    Light light2 = Light(Vector3f(this->width / 4, 3 * this->height / 4, 500), Vector3f(1.0f, 1.0f, 1.0f));
+    Light light3 = Light(Vector3f(3 * this->width / 4, this->height / 4, 500), Vector3f(1.0f, 1.0f, 1.0f));
+    Light light4 = Light(Vector3f(3 * this->width / 4, 3 * this->height / 4, 500), Vector3f(1.0f, 1.0f, 1.0f));
+    std::vector<Light> lights = {light1, light2};
+
+    Vector3f view_pos = Vector3f(this->width / 2, this->height / 2, 1000);
+
+    std::tie<RGBImage*, GrayImage*>(paint_image, height_map) = this->paint();
+
+    texture_image = this->texture(paint_image, height_map, shader, view_pos, lights);
+
+    return std::tuple<RGBImage*, RGBImage*, GrayImage*>(texture_image, paint_image, height_map);
+}
+
+std::tuple<RGBImage*, GrayImage*> FastPaintTexture::paint() {
     int brushes[ProgramParameters::num_layers];
     RGBImage *canvas, *ref_image;
     GrayImage *height_map;
@@ -75,7 +94,7 @@ std::tuple<RGBImage*, GrayImage*> Paint::paint() {
     return std::tuple<RGBImage*, GrayImage*>(canvas, height_map);
 }
 
-RGBImage *Paint::apply_lighting(RGBImage *image, GrayImage *height_map, Shader *shader, Vector3f view_pos, std::vector<Light> lights) {
+RGBImage *FastPaintTexture::texture(RGBImage *image, GrayImage *height_map, Shader *shader, Vector3f view_pos, std::vector<Light> lights) {
     // Sobel kernels used to compute image gradient
     HorizontalSobelKernel sobel_x = HorizontalSobelKernel::get_instance();
     VerticalSobelKernel sobel_y = VerticalSobelKernel::get_instance();
@@ -100,7 +119,7 @@ RGBImage *Paint::apply_lighting(RGBImage *image, GrayImage *height_map, Shader *
     return new RGBImage(this->width, this->height, shaded_image);
 }
 
-void Paint::paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height_map, int radius) {
+void FastPaintTexture::paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height_map, int radius) {
     std::vector<Stroke> strokes;
     GrayImage *differences, *luminosity;
     int grid, max_x, max_y;
@@ -180,13 +199,13 @@ void Paint::paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height
 }
 
 // TODO: Move this into the GrayImage class?
-float Paint::compose_height(float stroke_height, float stroke_opacity, float current_height) {
+float FastPaintTexture::compose_height(float stroke_height, float stroke_opacity, float current_height) {
     float height_blend = ImageUtil::alpha_blend(stroke_height, current_height, stroke_opacity / 255);
 
     return height_blend + 0.001f * this->cur_counter;
 }
 
-void Paint::render_stroke(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, AntiAliasedCircle *mask) {
+void FastPaintTexture::render_stroke(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, AntiAliasedCircle *mask) {
     std::vector<Vector2f> limit = stroke->get_limit();
 
     this->cur_counter++; // TODO: Does this need to be global
@@ -202,7 +221,7 @@ void Paint::render_stroke(RGBImage *canvas, GrayImage *height_map, Stroke *strok
     }
 }
 
-void Paint::render_stroke_point(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, int x, int y, AntiAliasedCircle *mask) {
+void FastPaintTexture::render_stroke_point(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, int x, int y, AntiAliasedCircle *mask) {
     int new_x, new_y, ind;
     float alpha, composed_height;
     Vector3f blended_colour;
@@ -248,7 +267,7 @@ void Paint::render_stroke_point(RGBImage *canvas, GrayImage *height_map, Stroke 
     }
 }
 
-void Paint::render_stroke_line(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, int x1, int y1, int x2, int y2, AntiAliasedCircle *mask) {
+void FastPaintTexture::render_stroke_line(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, int x1, int y1, int x2, int y2, AntiAliasedCircle *mask) {
     int xa, xb, ya, yb;
     float m, y;
 

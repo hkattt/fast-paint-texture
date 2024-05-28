@@ -11,11 +11,12 @@ using namespace std;
 using namespace Eigen;
 
 int main(int argc, const char **argv) {
-    // Name of the input file, shade file (final output), paint file (output),and the height file (output)
-    std::string input_file, shade_file, paint_file, height_file;
+    // Name of the input file, texture file (final output), paint file (output),and the height file (output)
+    std::string input_file, texture_file, paint_file, height_file;
     // Path to the input and output image directories
     std::string input_path = "../imgs/";
-    std::string texture_path = "../textures/";
+    std::string stroke_texture_path = "../stroke-textures/";
+    std::string texture_path = "../texture/";
     std::string paint_path = "../paint/";
     std::string height_path = "../height/";
 
@@ -33,8 +34,9 @@ int main(int argc, const char **argv) {
         std::cout << "Too many arguments provided" << std::endl;
         return 1;
     }
+
     paint_file = "paint-" + input_file;
-    shade_file = "shade-" + input_file;
+    texture_file = "texture-" + input_file;
     height_file = "height-" + input_file;
 
     // Load input image with colour
@@ -47,15 +49,14 @@ int main(int argc, const char **argv) {
     cout << "Loaded: " << input_file <<  " (" << input_image.cols << "x" << input_image.rows << ")" << ::endl;
 
     // Load brush stroke textures
-    cv::Mat height_texture_image = cv::imread(texture_path + "height.png", cv::IMREAD_GRAYSCALE);
+    cv::Mat height_texture_image = cv::imread(stroke_texture_path + "height.png", cv::IMREAD_GRAYSCALE);
     if (height_texture_image.empty()) {
         std::cerr << "Error: Could not open the height texture" << std::endl;
         return -1;
     }
     Texture *height_texture = new Texture(height_texture_image.cols, height_texture_image.rows, height_texture_image);
-    //Texture *height_texture = nullptr;
 
-    cv::Mat opacity_texture_image = cv::imread(texture_path + "opacity.png", cv::IMREAD_GRAYSCALE);
+    cv::Mat opacity_texture_image = cv::imread(stroke_texture_path + "opacity.png", cv::IMREAD_GRAYSCALE);
     if (opacity_texture_image.empty()) {
         std::cerr << "Error: Could not open the opacity texture" << std::endl;
         return -1;
@@ -66,48 +67,41 @@ int main(int argc, const char **argv) {
         std::cout << "Running in animation mode" << std::endl;
     #endif
 
-    // Create a Paint instance for the input image
-    Paint paint(input_image.cols, input_image.rows, input_image, height_texture, opacity_texture);
+    // Create a fast-paint-texture instance for the input image
+    FastPaintTexture paint(input_image.cols, input_image.rows, input_image, height_texture, opacity_texture);
 
-    // Paint the input image
-    RGBImage *output_image;
-    GrayImage *output_height_map;
-    std::tie<RGBImage*, GrayImage*>(output_image, output_height_map) = paint.paint();
-
-    // Shade the output image
+    // Shader to apply to the image
     BlinnPhongShader shader = BlinnPhongShader();
-    Light light1 = Light(Vector3f(input_image.cols / 4, input_image.rows / 4, 500), Vector3f(1.0f, 1.0f, 1.0f));
-    Light light2 = Light(Vector3f(input_image.cols / 4, 3 * input_image.rows / 4, 500), Vector3f(1.0f, 1.0f, 1.0f));
-    Light light3 = Light(Vector3f(3 * input_image.cols / 4, input_image.rows / 4, 500), Vector3f(1.0f, 1.0f, 1.0f));
-    Light light4 = Light(Vector3f(3 * input_image.cols / 4, 3 * input_image.rows / 4, 500), Vector3f(1.0f, 1.0f, 1.0f));
-    std::vector<Light> lights = {light1, light2};
-    Vector3f view_pos = Vector3f(input_image.cols / 2, input_image.rows / 2, 1000);
-    RGBImage *shaded_image = paint.apply_lighting(output_image, output_height_map, &shader, view_pos, lights);
+
+    // Apply the fast-paint-texture to the input image
+    RGBImage *texture_image, *paint_image;
+    GrayImage *height_map;
+    std::tie<RGBImage*, RGBImage*, GrayImage*>(texture_image, paint_image, height_map) = paint.fast_paint_texture(&shader);
 
     // Save the shaded image
-    cv::Mat *cv_output_shaded_image = shaded_image->to_cv_mat();
-    cv::imwrite(paint_path + shade_file, *cv_output_shaded_image);
-    cout << "Shaded image saved to: " << paint_path + shade_file << std::endl;
+    cv::Mat *cv_texture_image = texture_image->to_cv_mat();
+    cv::imwrite(texture_path + texture_file, *cv_texture_image);
+    cout << "Texture image saved to: " << texture_path + texture_file << std::endl;
 
     // Save the painted image
-    cv::Mat *cv_output_image = output_image->to_cv_mat();
-    cv::imwrite(paint_path + paint_file, *cv_output_image);
+    cv::Mat *cv_paint_image = paint_image->to_cv_mat();
+    cv::imwrite(paint_path + paint_file, *cv_paint_image);
     cout << "Image saved to: " << paint_path + paint_file << std::endl;
 
     // Save the height map
-    cv::Mat *cv_output_height_map = output_height_map->to_cv_mat();
-    cv::imwrite(height_path + height_file, *cv_output_height_map);
+    cv::Mat *cv_height_map = height_map->to_cv_mat();
+    cv::imwrite(height_path + height_file, *cv_height_map);
     cout << "Height map saved to: " << height_path + height_file << std::endl;
 
     // Free memory
-    delete output_image;
-    delete output_height_map;
+    delete texture_image;
+    delete cv_texture_image;
 
-    delete cv_output_image;
-    delete cv_output_height_map;
+    delete paint_image;
+    delete cv_paint_image;
     
-    delete shaded_image;
-    delete cv_output_shaded_image;
+    delete height_map;
+    delete cv_height_map;
 
     if (height_texture != nullptr) delete height_texture;
     if (opacity_texture != nullptr) delete opacity_texture;

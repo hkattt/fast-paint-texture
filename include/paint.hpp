@@ -12,7 +12,7 @@ using namespace Eigen;
 /**
  * The main painting class responsible for implementing the fast-paint-texture algorithm
 */
-class Paint {
+class FastPaintTexture {
     private:
         // Dimensions of the image
         int width, height;
@@ -53,6 +53,10 @@ class Paint {
 
         void render_stroke_line(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, int x1, int y1, int x2, int y2, AntiAliasedCircle *mask);
 
+        std::tuple<RGBImage*, GrayImage*> paint();
+
+        RGBImage *texture(RGBImage *image, GrayImage *height_map, Shader *shader, Vector3f view_pos, std::vector<Light> lights);
+
     public:
         /**
          * TODO: Update?
@@ -62,12 +66,12 @@ class Paint {
          * @param height: The height of the rasterizer window.
          * @param source_image: The input image to be painted.
         */
-        Paint(int width, int height, cv::Mat source_image, Texture *height_texture, Texture *opacity_texture);
+        FastPaintTexture(int width, int height, cv::Mat source_image, Texture *height_texture, Texture *opacity_texture);
 
         /**
          * Destructor for Paint.
         */
-        ~Paint() {
+        ~FastPaintTexture() {
             delete source_image;
             delete[] counters;
             delete[] old_colours;
@@ -78,7 +82,5 @@ class Paint {
             return this->source_image;
         }
 
-        std::tuple<RGBImage*, GrayImage*> paint();
-
-        RGBImage *apply_lighting(RGBImage *image, GrayImage *height_map, Shader *shader, Vector3f view_pos, std::vector<Light> lights);
+        std::tuple<RGBImage*, RGBImage*, GrayImage*> fast_paint_texture(Shader *shader);
 };
