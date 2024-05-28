@@ -1,6 +1,6 @@
 #include "texture.hpp"
 
-float Texture::get_texture_value(Eigen::Vector2f uv_coords) {
+float Texture::get_texture_value(Vector2f uv_coords) {
     // Image coordinates
     float x = uv_coords.x() * (this->get_width() - 1);
     float y = uv_coords.y() * (this->get_height() - 1);

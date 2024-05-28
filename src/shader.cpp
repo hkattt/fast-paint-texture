@@ -1,20 +1,20 @@
 #include "shader.hpp"
 
-Eigen::Vector3f BlinnPhongShader::shade(Eigen::Vector3f colour, Eigen::Vector3f pos, std::vector<Light> lights, Eigen::Vector3f view_pos, Eigen::Vector3f normal) {
+Vector3f BlinnPhongShader::shade(Vector3f colour, Vector3f pos, std::vector<Light> lights, Vector3f view_pos, Vector3f normal) {
     float ka = 0.1f;
     float kd = 0.6f;
     float ks = 0.3f;
 
-    Eigen::Vector3f amb_intensity = Eigen::Vector3f(1.0f, 1.0f, 1.0f);
+    Vector3f amb_intensity = Vector3f(1.0f, 1.0f, 1.0f);
 
     colour /= 255.0f;
 
-    Eigen::Vector3f output_colour = Eigen::Vector3f::Zero();
+    Vector3f output_colour = Vector3f::Zero();
 
     // Apply ambient lighting
     output_colour += ka * amb_intensity;
 
-    Eigen::Vector3f v, l, h;
+    Vector3f v, l, h;
 
     // View direction
     v = (view_pos - pos).normalized();

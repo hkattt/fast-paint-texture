@@ -1,7 +1,6 @@
 #include <opencv2/opencv.hpp>
 
 #include "image.hpp"
-#include "debug.hpp"
 
 using namespace std;
 
@@ -14,15 +13,15 @@ namespace ImageUtil {
         (*image)(y, x) = colour;
     }
 
-    Eigen::Vector3f get_pixel(RGBMatrix *image, int x, int y) {
+    Vector3f get_pixel(RGBMatrix *image, int x, int y) {
         return (*image)(y, x);
     }
 
-    void set_pixel(RGBMatrix *image, int x, int y, Eigen::Vector3f colour) {
+    void set_pixel(RGBMatrix *image, int x, int y, Vector3f colour) {
         (*image)(y, x) = colour;
     }
 
-    Eigen::Vector3f alpha_blend(Eigen::Vector3f c1, Eigen::Vector3f c2, float alpha) {
+    Vector3f alpha_blend(Vector3f c1, Vector3f c2, float alpha) {
             return (alpha * c1 + (1 - alpha) * c2).cwiseMin(255.0f).cwiseMax(0.0f);
         }
 
@@ -74,9 +73,9 @@ cv::Mat *GrayImage::to_cv_mat() {
     return cv_image;
 }
 
-std::tuple<Eigen::Vector2f, float> GrayImage::compute_gradient(int x, int y, HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y) {
-    Eigen::Vector2f grad = Eigen::Vector2f::Zero();
-    Eigen::Vector3f pixel;
+std::tuple<Vector2f, float> GrayImage::compute_gradient(int x, int y, HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y) {
+    Vector2f grad = Vector2f::Zero();
+    Vector3f pixel;
     float grad_mag, intensity;
     int image_x, image_y;
 
@@ -102,12 +101,12 @@ std::tuple<Eigen::Vector2f, float> GrayImage::compute_gradient(int x, int y, Hor
     // Compute the magnitude of the gradient
     grad_mag = grad.norm();
 
-    return std::tuple<Eigen::Vector2f, float>(grad, grad_mag);
+    return std::tuple<Vector2f, float>(grad, grad_mag);
 }
 
 RGBImage *GrayImage::compute_normals(HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y) {
-    Eigen::Vector3f normal;
-    Eigen::Vector2f grad;
+    Vector3f normal;
+    Vector2f grad;
     float grad_mag;
 
     RGBMatrix *normals = new RGBMatrix(this->height, this->width);
@@ -115,9 +114,9 @@ RGBImage *GrayImage::compute_normals(HorizontalSobelKernel *sobel_x, VerticalSob
     for (int y = 0; y < this->height; y++) {
         for (int x = 0; x < this->width; x++) {
             // Get the unit vector of gradient (gx, gy) and gradient magnitutde (unused)
-            std::tie<Eigen::Vector2f, float>(grad, grad_mag) = this->compute_gradient(x, y, sobel_x, sobel_y);
+            std::tie<Vector2f, float>(grad, grad_mag) = this->compute_gradient(x, y, sobel_x, sobel_y);
 
-            normal = Eigen::Vector3f(-grad.x(), -grad.y(), 1).normalized();
+            normal = Vector3f(-grad.x(), -grad.y(), 1).normalized();
 
             ImageUtil::set_pixel(normals, x, y, normal);
         }
@@ -126,7 +125,7 @@ RGBImage *GrayImage::compute_normals(HorizontalSobelKernel *sobel_x, VerticalSob
     return new RGBImage(this->width, this->height, normals);
 }
 
-RGBImage::RGBImage(int width, int height, Eigen::Vector3f colour) {
+RGBImage::RGBImage(int width, int height, Vector3f colour) {
     this->width = width;
     this->height = height;
     RGBMatrix *image = new RGBMatrix(height, width);
@@ -152,7 +151,7 @@ RGBImage::RGBImage(int width, int height, cv::Mat cv_image) {
             // Add the current pixel to the frame buffer
             // cv::Mat origin (0, 0) starts at the top-left corner
             // cv::Vec3b stores BGR values
-            ImageUtil::set_pixel(image, col, row, Eigen::Vector3f(pixel[2], pixel[1], pixel[0]));
+            ImageUtil::set_pixel(image, col, row, Vector3f(pixel[2], pixel[1], pixel[0]));
         } 
     }
     this->image = image;
@@ -161,7 +160,7 @@ RGBImage::RGBImage(int width, int height, cv::Mat cv_image) {
 cv::Mat *RGBImage::to_cv_mat() {
     cv::Mat *cv_image = new cv::Mat(this->height, this->width, CV_8UC3);
 
-    Eigen::Vector3f pixel;
+    Vector3f pixel;
     for (int y = 0; y < this->height; y++) {
         for (int x = 0; x < this->width; x++) {
             pixel = this->get_pixel(x, y);
@@ -186,8 +185,8 @@ RGBImage* RGBImage::gaussian_blur(const GaussianKernel *kernel) {
     return blurred_image;
 }
 
-Eigen::Vector3f RGBImage::convolve(int x, int y, const GaussianKernel *kernel) {
-    Eigen::Vector3f pixel;
+Vector3f RGBImage::convolve(int x, int y, const GaussianKernel *kernel) {
+    Vector3f pixel;
     int image_x, image_y;
     float value;
 
@@ -216,13 +215,13 @@ Eigen::Vector3f RGBImage::convolve(int x, int y, const GaussianKernel *kernel) {
         }
     }
     // Returns the blurred pixel
-    return Eigen::Vector3f(blurred_r, blurred_g, blurred_b);
+    return Vector3f(blurred_r, blurred_g, blurred_b);
 }
 
 GrayImage *RGBImage::luminosity() {
     GrayMatrix *luminosity = new GrayMatrix(this->height, this->width);
     
-    Eigen::Vector3f pixel;
+    Vector3f pixel;
     for (int y = 0; y < this->height; y++) {
         for (int x = 0; x < this->width; x++) {
             pixel = get_pixel(x, y);
@@ -235,8 +234,8 @@ GrayImage *RGBImage::luminosity() {
     return new GrayImage(this->width, this->height, luminosity);
 }
 
-Eigen::Vector3f RGBImage::average_colour() {
-    Eigen::Vector3f avg = Vector3f::Zero();
+Vector3f RGBImage::average_colour() {
+    Vector3f avg = Vector3f::Zero();
 
     for (int y = 0; y < this->height; y++) {
         for (int x = 0; x < this->width; x++) {

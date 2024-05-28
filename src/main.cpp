@@ -81,7 +81,7 @@ int main(int argc, const char **argv) {
     Light light3 = Light(Vector3f(3 * input_image.cols / 4, input_image.rows / 4, 500), Vector3f(1.0f, 1.0f, 1.0f));
     Light light4 = Light(Vector3f(3 * input_image.cols / 4, 3 * input_image.rows / 4, 500), Vector3f(1.0f, 1.0f, 1.0f));
     std::vector<Light> lights = {light1, light2};
-    Eigen::Vector3f view_pos = Eigen::Vector3f(input_image.cols / 2, input_image.rows / 2, 1000);
+    Vector3f view_pos = Vector3f(input_image.cols / 2, input_image.rows / 2, 1000);
     RGBImage *shaded_image = paint.apply_lighting(output_image, output_height_map, &shader, view_pos, lights);
 
     // Save the shaded image
@@ -98,22 +98,6 @@ int main(int argc, const char **argv) {
     cv::Mat *cv_output_height_map = output_height_map->to_cv_mat();
     cv::imwrite(height_path + height_file, *cv_output_height_map);
     cout << "Height map saved to: " << height_path + height_file << std::endl;
-
-    #ifdef ANIMATE
-        // view_pos = Eigen::Vector3f(input_image.cols / 2, input_image.rows / 2, 5);
-        // for (int i = 0; i < input_image.cols; i++) {
-        //     light_pos = Eigen::Vector3f(i, input_image.rows / 2, 500);
-        //     shaded_image = paint.apply_lighting(output_image, output_height_map, &shader, view_pos, light_pos);
-        //     cv_output_shaded_image = shaded_image->to_cv_mat();
-            
-        //     cv::imshow("shaded_image", *cv_output_shaded_image);
-
-        //     cv::waitKey(1);
-
-        //     delete shaded_image;
-        //     delete cv_output_shaded_image;
-        // }
-    #endif
 
     // Free memory
     delete output_image;

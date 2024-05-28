@@ -22,7 +22,7 @@ Paint::Paint(int width, int height, cv::Mat source_image, Texture *height_textur
 
     this->counters = new int[width * height];
     this->total_mask = new float[width * height];
-    this->old_colours = new Eigen::Vector3f[width * height];
+    this->old_colours = new Vector3f[width * height];
 
     this->height_texture = height_texture;
     this->opacity_texture = opacity_texture;
@@ -75,20 +75,20 @@ std::tuple<RGBImage*, GrayImage*> Paint::paint() {
     return std::tuple<RGBImage*, GrayImage*>(canvas, height_map);
 }
 
-RGBImage *Paint::apply_lighting(RGBImage *image, GrayImage *height_map, Shader *shader, Eigen::Vector3f view_pos, std::vector<Light> lights) {
+RGBImage *Paint::apply_lighting(RGBImage *image, GrayImage *height_map, Shader *shader, Vector3f view_pos, std::vector<Light> lights) {
     // Sobel kernels used to compute image gradient
     HorizontalSobelKernel sobel_x = HorizontalSobelKernel::get_instance();
     VerticalSobelKernel sobel_y = VerticalSobelKernel::get_instance();
     RGBImage *normals = height_map->compute_normals(&sobel_x, &sobel_y);
 
-    Eigen::Vector3f pos;
-    Eigen::Vector3f new_colour;
+    Vector3f pos;
+    Vector3f new_colour;
 
     RGBMatrix *shaded_image = new RGBMatrix(this->height, this->width);
 
     for (int y = 0; y < this->height; y++) {
         for (int x = 0; x < this->width; x++) {
-            pos = Eigen::Vector3f(x, y, 0);
+            pos = Vector3f(x, y, 0);
             new_colour = shader->shade(image->get_pixel(x, y), pos, lights, view_pos, normals->get_pixel(x, y));
             ImageUtil::set_pixel(shaded_image, x, y, new_colour);
         }
@@ -187,7 +187,7 @@ float Paint::compose_height(float stroke_height, float stroke_opacity, float cur
 }
 
 void Paint::render_stroke(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, AntiAliasedCircle *mask) {
-    std::vector<Eigen::Vector2f> limit = stroke->get_limit();
+    std::vector<Vector2f> limit = stroke->get_limit();
 
     this->cur_counter++; // TODO: Does this need to be global
     this->cur_colour = stroke->get_colour(); // TODO: Is this really needed if we are passing color
@@ -205,7 +205,7 @@ void Paint::render_stroke(RGBImage *canvas, GrayImage *height_map, Stroke *strok
 void Paint::render_stroke_point(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, int x, int y, AntiAliasedCircle *mask) {
     int new_x, new_y, ind;
     float alpha, composed_height;
-    Eigen::Vector3f blended_colour;
+    Vector3f blended_colour;
 
 
     for (int j = 0; j < mask->get_len(); j++) {
