@@ -21,11 +21,11 @@ class Paint {
 
         // Arrays used for stroke drawing 
         int *counters = nullptr;
-        Eigen::Vector3f *old_colours = nullptr;
+        Vector3f *old_colours = nullptr;
         float *total_mask = nullptr;
 
         int cur_counter = 0;
-        Eigen::Vector3f cur_colour; 
+        Vector3f cur_colour; 
 
         // Textures
         Texture *height_texture;
@@ -80,5 +80,5 @@ class Paint {
 
         std::tuple<RGBImage*, GrayImage*> paint();
 
-        RGBImage *apply_lighting(RGBImage *image, GrayImage *height_map, Shader *shader, Eigen::Vector3f view_pos, std::vector<Light> lights);
+        RGBImage *apply_lighting(RGBImage *image, GrayImage *height_map, Shader *shader, Vector3f view_pos, std::vector<Light> lights);
 };

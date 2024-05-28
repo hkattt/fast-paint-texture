@@ -25,5 +25,5 @@ class Texture {
             return this->texture->get_height();
         }
 
-        float get_texture_value(Eigen::Vector2f uv_coords);
+        float get_texture_value(Vector2f uv_coords);
 };   

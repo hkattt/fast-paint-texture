@@ -8,7 +8,7 @@ using namespace Eigen;
 
 class Shader {
     public:
-        virtual Eigen::Vector3f shade(Eigen::Vector3f colour, Eigen::Vector3f pos, std::vector<Light> lights, Eigen::Vector3f view_pos, Eigen::Vector3f normal) = 0;
+        virtual Vector3f shade(Vector3f colour, Vector3f pos, std::vector<Light> lights, Vector3f view_pos, Vector3f normal) = 0;
 
         virtual ~Shader() {}
 };
@@ -21,5 +21,5 @@ class BlinnPhongShader : public Shader {
     public:
         BlinnPhongShader() = default;
 
-        Eigen::Vector3f shade(Eigen::Vector3f colour, Eigen::Vector3f pos, std::vector<Light> lights, Eigen::Vector3f view_pos, Eigen::Vector3f normal);
+        Vector3f shade(Vector3f colour, Vector3f pos, std::vector<Light> lights, Vector3f view_pos, Vector3f normal);
 };

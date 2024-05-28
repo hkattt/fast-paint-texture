@@ -9,9 +9,9 @@ using namespace Eigen;
 class Stroke {
     private:
         int radius;
-        Eigen::Vector3f colour;
-        std::vector<Eigen::Vector2f> control_points;
-        std::vector<Eigen::Vector2f> limit;
+        Vector3f colour;
+        std::vector<Vector2f> control_points;
+        std::vector<Vector2f> limit;
 
         // Angle threshold - used to ensure smooth interpolation
         const double theta_tol = 0.1;
@@ -23,8 +23,8 @@ class Stroke {
         Texture *opacity_texture = nullptr;
 
         // Bottom-left and top-right coordinates for bounding box
-        Eigen::Vector2i bottom_left;
-        Eigen::Vector2i top_right;
+        Vector2i bottom_left;
+        Vector2i top_right;
 
         /**
          * Determines if the limit has been completed.
@@ -61,18 +61,18 @@ class Stroke {
         /**
          * @return: The limit of the Stroke. Computes the limit if needed
         */
-        std::vector<Eigen::Vector2f> get_limit() {
+        std::vector<Vector2f> get_limit() {
             if (this->limit.size() == 0) {
                 compute_limit_curve();
             }
             return this->limit;
         }
 
-        Eigen::Vector3f get_colour() {
+        Vector3f get_colour() {
             return this->colour;
         }
 
-        Eigen::Vector2f get_uv_coords(int x, int y);
+        Vector2f get_uv_coords(int x, int y);
 
         float get_height(int x, int y);
 
