@@ -16,16 +16,22 @@ class Kernel {
 
     public:
         /**
-         * @return The length of the kernel window 
+         * @return: The length of the kernel window 
         */    
         int get_len() const {
             return this->len;
         }
 
+        /**
+         * @return: The centre x-coordinate of the kernel window
+        */
         int get_centre_x() const {
             return this->centre_x;
         }
 
+        /**
+         * @return: The centre y-coordiante of the kernel window
+        */
         int get_centre_y() const {
             return this->centre_y;
         }

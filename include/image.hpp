@@ -68,7 +68,7 @@ namespace ImageUtil {
 class RGBImage;
 
 /**
- * Object representing a gray-scale image
+ * Gray-scale image class.
 */
 class GrayImage {
     private:
@@ -182,6 +182,9 @@ class GrayImage {
         RGBImage *compute_normals(const HorizontalSobelKernel *sobel_x, const VerticalSobelKernel *sobel_y);
 };
 
+/**
+ * RGB Image class.
+*/
 class RGBImage {
     private:
         // Dimensions of the image
