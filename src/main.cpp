@@ -19,19 +19,51 @@ int main(int argc, const char **argv) {
     std::string texture_path = "../texture/";
     std::string paint_path = "../paint/";
     std::string height_path = "../height/";
+    
+    // Input shader
+    std::string input_shader;
 
     // No arguments provided
-    if (argc < 2) {
-        std::cout << "Usage: fast-paint-texture (input file)" << std::endl;
+    if (argc < 3) {
+        std::cout << "Usage: fast-paint-texture (input file) (shader)\n" << std::endl;
         return 1;
     } 
-    // Input file provided
-    else if (argc == 2) {
+    // Input file and shader provided 
+    else if (argc == 3) {
         input_file = argv[1];
+        input_shader = argv[2];
     }
     // More than one arguments provided
     else {
-        std::cout << "Too many arguments provided" << std::endl;
+        std::cout << "Too many arguments provided\n" << std::endl;
+        return 1;
+    }
+
+    std::unique_ptr<Shader> shader;
+
+    // Select lighting shader based on input 
+    if (input_shader == "blinn-phong") {
+        std::cout << "Rendering using Blinn-Phong lighting shader" << std::endl;
+        shader = std::make_unique<BlinnPhongShader>();
+    } 
+    else if (input_shader == "lambertian") {
+        std::cout << "Rendering using Lambertian lighting shader" << std::endl;
+        shader = std::make_unique<LambertianShader>();
+    } 
+    else if (input_shader == "oren-nayar") {
+        std::cout << "Rendering using Oren-Nayar lighting shader" << std::endl;
+        shader = std::make_unique<OrenNayarShader>();
+    } 
+    else if (input_shader == "toon") {
+        std::cout << "Rendering using Toon (Cel Shading) lighting shader" << std::endl;
+        shader = std::make_unique<ToonShader>();
+    } 
+    else if (input_shader == "normal") {
+        std::cout << "Rendering using normal lighting shader" << std::endl;
+        shader = std::make_unique<NormalShader>();
+    } 
+    else {
+        std::cout << "Invalid shader. Pick from:\n\tblinn-phong\n\tlambertian\n\toren-nayar\n\ttoon\n\tnormal" << std::endl;
         return 1;
     }
 
@@ -70,17 +102,10 @@ int main(int argc, const char **argv) {
     // Create a fast-paint-texture instance for the input image
     FastPaintTexture paint(input_image.cols, input_image.rows, input_image, height_texture, opacity_texture);
 
-    // Shader to apply to the image
-    BlinnPhongShader blinn_phong_shader = BlinnPhongShader();
-    LambertianShader lambertian_shader = LambertianShader();
-    OrenNayarShader oren_nayar_shader = OrenNayarShader();
-    ToonShader toon_shader = ToonShader();
-    NormalShader normal_shader = NormalShader();
-
     // Apply the fast-paint-texture to the input image
     RGBImage *texture_image, *paint_image;
     GrayImage *height_map;
-    std::tie<RGBImage*, RGBImage*, GrayImage*>(texture_image, paint_image, height_map) = paint.fast_paint_texture(&toon_shader);
+    std::tie<RGBImage*, RGBImage*, GrayImage*>(texture_image, paint_image, height_map) = paint.fast_paint_texture(shader.get());
 
     // Save the shaded image
     cv::Mat *cv_texture_image = texture_image->to_cv_mat();
