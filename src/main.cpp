@@ -71,12 +71,16 @@ int main(int argc, const char **argv) {
     FastPaintTexture paint(input_image.cols, input_image.rows, input_image, height_texture, opacity_texture);
 
     // Shader to apply to the image
-    BlinnPhongShader shader = BlinnPhongShader();
+    BlinnPhongShader blinn_phong_shader = BlinnPhongShader();
+    LambertianShader lambertian_shader = LambertianShader();
+    OrenNayarShader oren_nayar_shader = OrenNayarShader();
+    ToonShader toon_shader = ToonShader();
+    NormalShader normal_shader = NormalShader();
 
     // Apply the fast-paint-texture to the input image
     RGBImage *texture_image, *paint_image;
     GrayImage *height_map;
-    std::tie<RGBImage*, RGBImage*, GrayImage*>(texture_image, paint_image, height_map) = paint.fast_paint_texture(&shader);
+    std::tie<RGBImage*, RGBImage*, GrayImage*>(texture_image, paint_image, height_map) = paint.fast_paint_texture(&toon_shader);
 
     // Save the shaded image
     cv::Mat *cv_texture_image = texture_image->to_cv_mat();

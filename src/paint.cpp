@@ -36,7 +36,7 @@ std::tuple<RGBImage*, RGBImage*, GrayImage*> FastPaintTexture::fast_paint_textur
     Light light2 = Light(Vector3f(this->width / 4, 3 * this->height / 4, 500), Vector3f(1.0f, 1.0f, 1.0f));
     Light light3 = Light(Vector3f(3 * this->width / 4, this->height / 4, 500), Vector3f(1.0f, 1.0f, 1.0f));
     Light light4 = Light(Vector3f(3 * this->width / 4, 3 * this->height / 4, 500), Vector3f(1.0f, 1.0f, 1.0f));
-    std::vector<Light> lights = {light1, light2};
+    std::vector<Light> lights = {light1, light2, light3, light4};
 
     Vector3f view_pos = Vector3f(this->width / 2, this->height / 2, 1000);
 
@@ -100,15 +100,15 @@ RGBImage *FastPaintTexture::texture(RGBImage *image, GrayImage *height_map, Shad
     VerticalSobelKernel sobel_y = VerticalSobelKernel::get_instance();
     RGBImage *normals = height_map->compute_normals(&sobel_x, &sobel_y);
 
-    Vector3f pos;
-    Vector3f new_colour;
+    Vector3f pos, new_colour, pixel;
 
     RGBMatrix *shaded_image = new RGBMatrix(this->height, this->width);
 
     for (int y = 0; y < this->height; y++) {
         for (int x = 0; x < this->width; x++) {
             pos = Vector3f(x, y, 0);
-            new_colour = shader->shade(image->get_pixel(x, y), pos, lights, view_pos, normals->get_pixel(x, y));
+            pixel = image->get_pixel(x, y);
+            new_colour = shader->shade(pixel, pos, lights, view_pos, normals->get_pixel(x, y));
             ImageUtil::set_pixel(shaded_image, x, y, new_colour);
         }
     }
@@ -181,20 +181,16 @@ void FastPaintTexture::paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayIm
     delete differences;
     delete luminosity;
 
-    // Shuffle the strokes
-    // TODO: Figure out why we can't shuffle the strokes??
-    //std::random_shuffle(strokes.begin(), strokes.end());
-
     // Render the strokes to the canvas
     for (Stroke stroke : strokes) {
         this->render_stroke(canvas, height_map, &stroke, &brush);
 
-        // #ifdef ANIMATE
-        //     cv::Mat *cv_canvas = canvas->to_cv_mat();
-        //     cv::imshow("canvas", *cv_canvas);
-        //     cv::waitKey(1);
-        //     delete cv_canvas;
-        // #endif
+        #ifdef ANIMATE
+            cv::Mat *cv_canvas = canvas->to_cv_mat();
+            cv::imshow("canvas", *cv_canvas);
+            cv::waitKey(1);
+            delete cv_canvas;
+        #endif
     }    
 }
 
