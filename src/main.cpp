@@ -59,7 +59,7 @@ int main(int argc, const char **argv) {
         shader = std::make_unique<ToonShader>();
     } 
     else if (input_shader == "normal") {
-        std::cout << "Rendering using normal lighting shader" << std::endl;
+        std::cout << "Rendering using Normal lighting shader" << std::endl;
         shader = std::make_unique<NormalShader>();
     } 
     else {
@@ -68,7 +68,7 @@ int main(int argc, const char **argv) {
     }
 
     paint_file = "paint-" + input_file;
-    texture_file = "texture-" + input_file;
+    texture_file = input_shader + "-" + input_file;
     height_file = "height-" + input_file;
 
     // Load input image with colour
