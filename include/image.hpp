@@ -1,30 +1,30 @@
 #pragma once
 
+#include <opencv2/opencv.hpp>
 #include <Eigen/Eigen>
 
 #include "kernel.hpp"
-#include "stroke.hpp"
 
 using namespace Eigen;
 
-class Stroke;
-
-typedef Eigen::Matrix<Eigen::Vector3f, Eigen::Dynamic, Eigen::Dynamic> RGBMatrix;
-typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> GrayMatrix;
+typedef Matrix<Vector3f, Dynamic, Dynamic> RGBMatrix;
+typedef Matrix<float, Dynamic, Dynamic> GrayMatrix;
 
 namespace ImageUtil {
     float get_pixel(GrayMatrix *image, int x, int y);
 
     void set_pixel(GrayMatrix *image, int x, int y, float colour);
     
-    Eigen::Vector3f get_pixel(RGBMatrix *image, int x, int y);
+    Vector3f get_pixel(RGBMatrix *image, int x, int y);
 
-    void set_pixel(RGBMatrix *image, int x, int y, Eigen::Vector3f colour);
+    void set_pixel(RGBMatrix *image, int x, int y, Vector3f colour);
 
-    Eigen::Vector3f alpha_blend(Eigen::Vector3f c1, Eigen::Vector3f c2, float alpha);
+    Vector3f alpha_blend(Vector3f c1, Vector3f c2, float alpha);
 
     float alpha_blend(float h1, float h2, float alpha);
 }
+
+class RGBImage;
 
 class GrayImage {
     private:
@@ -88,6 +88,20 @@ class GrayImage {
         }
 
         cv::Mat *to_cv_mat();
+
+        /**
+         * Computes the gradient of the image at the given point
+         * 
+         * @param x: x-coordinate 
+         * @param y: y-coordinate
+         * @param sobel_x: Horizontal sobel kernel
+         * @param sobel_y: Vertical sobel kernel
+         * 
+         * @return: Tuple containing the gradient (gx, gy) and the magnitude of the gradient
+        */
+        std::tuple<Vector2f, float> compute_gradient(int x, int y, HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y);
+
+        RGBImage *compute_normals(HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y);
 };
 
 class RGBImage {
@@ -106,7 +120,7 @@ class RGBImage {
          * 
          * @returns: Convovled pixel
         */
-        Eigen::Vector3f convolve(int x, int y, const GaussianKernel *kernel);
+        Vector3f convolve(int x, int y, const GaussianKernel *kernel);
 
     public:
         RGBImage() : width(0), height(0) {}
@@ -126,7 +140,7 @@ class RGBImage {
          * @param height: height of the image
          * @param colour: colour to set the image to
         */
-        RGBImage(int width, int height, Eigen::Vector3f colour);
+        RGBImage(int width, int height, Vector3f colour);
 
         RGBImage(int width, int height, cv::Mat cv_image);
 
@@ -146,7 +160,7 @@ class RGBImage {
             return this->image;
         }
 
-        void set_pixel(int x, int y, Eigen::Vector3f c) {
+        void set_pixel(int x, int y, Vector3f c) {
             // Eigen matrices (row, col) indicies
             ImageUtil::set_pixel(this->image, x, y, c);
         }
@@ -157,7 +171,7 @@ class RGBImage {
          * 
          * @return: Pixel at (x, y) represented as a vector (RGB)
         */
-        Eigen::Vector3f get_pixel(int x, int y) {
+        Vector3f get_pixel(int x, int y) {
             // Eigen uses (row, col) indicies
             return ImageUtil::get_pixel(this->image, x, y);
         }
@@ -171,24 +185,12 @@ class RGBImage {
          * 
          * @return: Blurred image
         */
-        RGBImage* gaussian_blur(const GaussianKernel *kernel);
-
-        /**
-         * Computes the gradient of the image at the given point
-         * 
-         * @param x: x-coordinate 
-         * @param y: y-coordinate
-         * @param sobel_x: Horizontal sobel kernel
-         * @param sobel_y: Vertical sobel kernel
-         * 
-         * @return: Tuple containing the gradient (gx, gy) and the magnitude of the gradient
-        */
-        std::tuple<Eigen::Vector2f, float> compute_gradient(int x, int y, HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y);
+        RGBImage *gaussian_blur(const GaussianKernel *kernel);
 
         /**
          * @return: The average pixel colour of the image
         */
-        Eigen::Vector3f average_colour();
+        Vector3f average_colour();
 
         /**
          * Computes the difference between the image and the compare_image
@@ -196,5 +198,7 @@ class RGBImage {
          * @return: Matrix containing the difference betweene each pixel
         */
         GrayImage* difference(RGBImage *compare_image);
+
+        GrayImage *luminosity();
 };
 
