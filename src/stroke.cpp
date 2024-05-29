@@ -1,7 +1,7 @@
 #include "stroke.hpp"
 #include "parameters.hpp"
 
-Stroke::Stroke(int x0, int y0, int radius, RGBImage *ref_image, RGBImage *canvas, GrayImage *luminosity) {
+Stroke::Stroke(int x0, int y0, int radius, RGBImage *ref_image, RGBImage *canvas, GrayImage *luminosity, Texture *height_texture, Texture *opacity_texture) {
     Vector2f d, g, last;
     Vector3f ref_pixel, canvas_pixel, new_pixel;
     float grad_mag;
@@ -73,6 +73,10 @@ Stroke::Stroke(int x0, int y0, int radius, RGBImage *ref_image, RGBImage *canvas
         // Add the new control point
         this->control_points.push_back(Vector2f(x, y));
     }
+
+    this->height_texture = height_texture;
+    this->opacity_texture = opacity_texture;
+    this->compute_bounding_box(ref_image->get_width(), ref_image->get_height());
 }
 
 bool Stroke::limit_is_done() {
@@ -180,7 +184,7 @@ void Stroke::compute_limit_curve() {
     }
 }
 
-Vector2f Stroke::get_uv_coords(int x, int y) {
+Vector2f Stroke::get_uv_coords(const int x, const int y) const {
     // Compute the width and height of the stroke bounding box
     int width = this->top_right.x() - this->bottom_left.x();
     int height = this->top_right.y() - this->bottom_left.y();
@@ -200,7 +204,7 @@ Vector2f Stroke::get_uv_coords(int x, int y) {
     return Vector2f(u, v);
 }
 
-void Stroke::compute_bounding_box(int width, int height) {
+void Stroke::compute_bounding_box(const int width, const int height) {
     int len = this->control_points.size();
 
     // Smallest and largest x-coordinates
@@ -237,7 +241,7 @@ void Stroke::compute_bounding_box(int width, int height) {
     this->top_right = Vector2i(x_max, y_max);
 }
 
-float Stroke::get_height(int x, int y) {
+float Stroke::get_height(const int x, const int y) const {
     // Default (constant height)
     if (this->height_texture == nullptr) {
         return 1.0f;
@@ -250,7 +254,7 @@ float Stroke::get_height(int x, int y) {
     return this->height_texture->get_texture_value(uv_coords);
 }
 
-float Stroke::get_opacity(int x, int y) {
+float Stroke::get_opacity(const int x, const int y) const {
     // Default (constant opacity)
     if (this->opacity_texture == nullptr) {
         return 125.0f;

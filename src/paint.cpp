@@ -166,13 +166,7 @@ void FastPaintTexture::paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayIm
             }
             // It is cheaper to check this than dividing area_error by grid * grid
             if (area_error > ProgramParameters::threshold * grid * grid) {
-                Stroke stroke = Stroke(max_x, max_y, radius, ref_image, canvas, luminosity);
-
-                stroke.compute_bounding_box(canvas->get_width(), canvas->get_height());
-
-                stroke.set_height_texture(this->height_texture);
-                stroke.set_opacity_texture(this->opacity_texture);
-                
+                Stroke stroke = Stroke(max_x, max_y, radius, ref_image, canvas, luminosity, this->height_texture, this->opacity_texture);
                 strokes.push_back(stroke);
             }
         }

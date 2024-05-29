@@ -72,7 +72,7 @@ Vector3f LambertianShader::shade(const Vector3f &colour, const Vector3f &pos, co
 }
 
 /**
- * Based on: https://github.com/glslify/glsl-diffuse-oren-nayar/blob/master/index.glsl
+ * This implementation is based on: https://github.com/glslify/glsl-diffuse-oren-nayar/blob/master/index.glsl
 */
 Vector3f OrenNayarShader::shade(const Vector3f &colour, const Vector3f &pos, const std::vector<Light> &lights, const Vector3f &view_pos, const Vector3f &normal) {
     // Scale the input colour between [0, 1]
