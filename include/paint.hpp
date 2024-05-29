@@ -3,13 +3,16 @@
 #include <Eigen/Eigen>
 
 #include "image.hpp"
+#include "stroke.hpp"
+#include "shader.hpp"
+#include "light.hpp"
 
 using namespace Eigen;
 
 /**
  * The main painting class responsible for implementing the fast-paint-texture algorithm
 */
-class Paint {
+class FastPaintTexture {
     private:
         // Dimensions of the image
         int width, height;
@@ -18,11 +21,15 @@ class Paint {
 
         // Arrays used for stroke drawing 
         int *counters = nullptr;
-        Eigen::Vector3f *old_colours = nullptr;
+        Vector3f *old_colours = nullptr;
         float *total_mask = nullptr;
 
         int cur_counter = 0;
-        Eigen::Vector3f cur_colour; 
+        Vector3f cur_colour; 
+
+        // Textures
+        Texture *height_texture;
+        Texture *opacity_texture;
         
         /**
          * TODO: Update
@@ -38,28 +45,33 @@ class Paint {
         */
         void paint_layer(RGBImage *ref_image, RGBImage *canvas, GrayImage *height_map, int radius);
 
-        float compose_height(float h);
+        float compose_height(float stroke_height, float stroke_opacity, float current_height);
 
         void render_stroke(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, AntiAliasedCircle *mask);
 
-        void render_stroke_point(RGBImage *canvas, GrayImage *height_map, int x, int y, AntiAliasedCircle *mask);
+        void render_stroke_point(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, int x, int y, AntiAliasedCircle *mask);
 
-        void render_stroke_line(RGBImage *canvas, GrayImage *height_map, int x1, int y1, int x2, int y2, AntiAliasedCircle *mask);
+        void render_stroke_line(RGBImage *canvas, GrayImage *height_map, Stroke *stroke, int x1, int y1, int x2, int y2, AntiAliasedCircle *mask);
+
+        std::tuple<RGBImage*, GrayImage*> paint();
+
+        RGBImage *texture(RGBImage *image, GrayImage *height_map, Shader *shader, Vector3f view_pos, std::vector<Light> lights);
 
     public:
         /**
+         * TODO: Update?
          * Constructor for Paint.
          * 
          * @param width: The width of the rasterizer window.
          * @param height: The height of the rasterizer window.
          * @param source_image: The input image to be painted.
         */
-        Paint(int width, int height, cv::Mat source_image);
+        FastPaintTexture(int width, int height, cv::Mat source_image, Texture *height_texture, Texture *opacity_texture);
 
         /**
          * Destructor for Paint.
         */
-        ~Paint() {
+        ~FastPaintTexture() {
             delete source_image;
             delete[] counters;
             delete[] old_colours;
@@ -70,5 +82,5 @@ class Paint {
             return this->source_image;
         }
 
-        std::tuple<RGBImage*, GrayImage*> paint();
+        std::tuple<RGBImage*, RGBImage*, GrayImage*> fast_paint_texture(Shader *shader);
 };
