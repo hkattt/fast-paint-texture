@@ -4,6 +4,9 @@
 
 using namespace Eigen;
 
+/**
+ * Light class representing a point light
+*/
 class Light {
     private:
         Vector3f position;
@@ -15,11 +18,11 @@ class Light {
             this->intensity = intensity;
         }
 
-        inline Vector3f get_position() {
+        inline Vector3f get_position() const {
             return this->position;
         }
 
-        inline Vector3f get_intensity() {
+        inline Vector3f get_intensity() const {
             return this->intensity;
         }
 };

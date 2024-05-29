@@ -7,25 +7,69 @@
 
 using namespace Eigen;
 
+// Eigen matrix for storing RGB (3-channel images)
 typedef Matrix<Vector3f, Dynamic, Dynamic> RGBMatrix;
+// Eigen matrix for storing gray-scale (single channel images)
 typedef Matrix<float, Dynamic, Dynamic> GrayMatrix;
 
+/**
+ * Image utility functions not associated to a object.
+*/
 namespace ImageUtil {
-    float get_pixel(GrayMatrix *image, int x, int y);
+    /**
+     * @param image: Gray-scale matrix
+     * @param x: x-coordinate
+     * @param y: y-coordinate
+     * 
+     * @return: Pixel at (x, y)
+    */
+    float get_pixel(const GrayMatrix *image, const int x, const int y);
 
-    void set_pixel(GrayMatrix *image, int x, int y, float colour);
+    /**
+     * @param image: Gray-scale matrix
+     * @param x: x-coordiante
+     * @param y: y-coordiante
+     * @param colour: colour to set
+    */
+    void set_pixel(GrayMatrix *image, const int x, const int y, const float colour);
     
-    Vector3f get_pixel(RGBMatrix *image, int x, int y);
+    /**
+     * @param image: Gray-scale matrix
+     * @param x: x-coordinate
+     * @param y: y-coordinate
+     * 
+     * @return: Pixel at (x, y)
+    */
+    Vector3f get_pixel(const RGBMatrix *image, const int x, const int y);
 
-    void set_pixel(RGBMatrix *image, int x, int y, Vector3f colour);
+    /**
+     * @param image: Gray-scale matrix
+     * @param x: x-coordiante
+     * @param y: y-coordiante
+     * @param colour: colour to set
+    */
+    void set_pixel(RGBMatrix *image, const int x, const int y, const Vector3f colour);
 
-    Vector3f alpha_blend(Vector3f c1, Vector3f c2, float alpha);
+    /**
+     * @param c1: first colour to blend
+     * @param c2: second colour to blend
+     * @param alpha: alpha to blend with 
+    */
+    Vector3f alpha_blend(const Vector3f c1, const Vector3f c2, const float alpha);
 
-    float alpha_blend(float h1, float h2, float alpha);
+     /**
+     * @param c1: first colour to blend
+     * @param c2: second colour to blend
+     * @param alpha: alpha to blend with 
+    */
+    float alpha_blend(const float h1, const float h2, const float alpha);
 }
 
 class RGBImage;
 
+/**
+ * Gray-scale image class.
+*/
 class GrayImage {
     private:
         // Dimensions of the image
@@ -36,6 +80,15 @@ class GrayImage {
     public:
         GrayImage() : width(0), height(0) {}
 
+        /**
+         * Constructor for GrayImage.
+         * 
+         * Create a gray-scale image from the input gray matrix.
+         * 
+         * @param width: width of the image
+         * @param height: height of the image
+         * @param image: image matrix to create the image from 
+        */
         GrayImage(int width, int height, GrayMatrix *image) {
             this->width = width;
             this->height = height;
@@ -51,20 +104,33 @@ class GrayImage {
          * @param height: height of the image
          * @param colour: colour to set the image to
         */
-        GrayImage(int width, int height, float colour);
+        GrayImage(const int width, const int height, const float colour);
 
-        GrayImage(int width, int height, cv::Mat cv_image);
+        /**
+         * Constructor for GrayImage.
+         * 
+         * Create a gray-scale image from the OpenCV matrix
+         * 
+         * @param width: width of the image
+         * @param height: height of the image
+         * @param cv_image: OpenCV matrix to create the image from
+        */
+        GrayImage(const int width, const int height, const cv::Mat cv_image);
 
         ~GrayImage() {
             delete image;
         }
 
-        int get_width() {
+        int get_width() const {
             return this->width;
         }
 
-        int get_height() {
+        int get_height() const {
             return this->height;
+        }
+
+        GrayMatrix *get_image() {
+            return this->image;
         }
 
         /**
@@ -73,20 +139,26 @@ class GrayImage {
          * 
          * @return: Pixel at (x, y) represented as a vector (RGB)
         */
-        float get_pixel(int x, int y) {
+        float get_pixel(const int x, const int y) const {
             // Eigen uses (row, col) indicies
             return ImageUtil::get_pixel(this->image, x, y);
         }
 
-        void set_pixel(int x, int y, float c) {
+        /**
+         * @param x: x-coordiante of the pixel
+         * @param y: y-coordiante of the pixel 
+         * @param c: colour to set
+        */
+        void set_pixel(const int x, const int y, const float c) {
             // Eigen matrices (row, col) indicies
             ImageUtil::set_pixel(this->image, x, y, c);
         }
 
-        GrayMatrix *get_image() {
-            return this->image;
-        }
-
+        /**
+         * Converts the gray-scale image to a single-channel OpenCV matrix.
+         * 
+         * @return: Single-channel OpenCV matrix of the gray image. This matrix must be freed
+        */
         cv::Mat *to_cv_mat();
 
         /**
@@ -99,11 +171,20 @@ class GrayImage {
          * 
          * @return: Tuple containing the gradient (gx, gy) and the magnitude of the gradient
         */
-        std::tuple<Vector2f, float> compute_gradient(int x, int y, HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y);
+        std::tuple<Vector2f, float> compute_gradient(const int x, const int y, const HorizontalSobelKernel *sobel_x, const VerticalSobelKernel *sobel_y);
 
-        RGBImage *compute_normals(HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y);
+        /**
+         * @param sobel_x: Horiozntal sobel kernel
+         * @param sobel_y: Vertical sobel kernel
+         * 
+         * @return: RGB image containing the normal vectors of every pixel in the gray image
+        */
+        RGBImage *compute_normals(const HorizontalSobelKernel *sobel_x, const VerticalSobelKernel *sobel_y);
 };
 
+/**
+ * RGB Image class.
+*/
 class RGBImage {
     private:
         // Dimensions of the image
@@ -120,11 +201,20 @@ class RGBImage {
          * 
          * @returns: Convovled pixel
         */
-        Vector3f convolve(int x, int y, const GaussianKernel *kernel);
+        Vector3f convolve(const int x, const int y, const GaussianKernel *kernel);
 
     public:
         RGBImage() : width(0), height(0) {}
 
+        /**
+         * Constructor for RGBImage.
+         * 
+         * Create a RGB image from the input RGB matrix.
+         * 
+         * @param width: width of the image
+         * @param height: height of the image
+         * @param image: image matrix to create the image from 
+        */
         RGBImage(int width, int height, RGBMatrix *image) {
             this->width = width;
             this->height = height;
@@ -140,29 +230,33 @@ class RGBImage {
          * @param height: height of the image
          * @param colour: colour to set the image to
         */
-        RGBImage(int width, int height, Vector3f colour);
+        RGBImage(const int width, const int height, const Vector3f colour);
 
-        RGBImage(int width, int height, cv::Mat cv_image);
+        /**
+         * Constructor for RGB.
+         * 
+         * Create a RGB image from the OpenCV matrix
+         * 
+         * @param width: width of the image
+         * @param height: height of the image
+         * @param cv_image: OpenCV matrix to create the image from
+        */
+        RGBImage(const int width, const int height, const cv::Mat cv_image);
 
         ~RGBImage() {
             delete image;
         }
 
-        int get_width() {
+        int get_width() const {
             return this->width;
         }
 
-        int get_height() {
+        int get_height() const {
             return this->height;
         }
 
-        RGBMatrix *get_image() {
+        RGBMatrix *get_image() const {
             return this->image;
-        }
-
-        void set_pixel(int x, int y, Vector3f c) {
-            // Eigen matrices (row, col) indicies
-            ImageUtil::set_pixel(this->image, x, y, c);
         }
 
         /**
@@ -171,11 +265,26 @@ class RGBImage {
          * 
          * @return: Pixel at (x, y) represented as a vector (RGB)
         */
-        Vector3f get_pixel(int x, int y) {
+        Vector3f get_pixel(const int x, const int y) const {
             // Eigen uses (row, col) indicies
             return ImageUtil::get_pixel(this->image, x, y);
         }
 
+        /**
+         * @param x: x-coordiante of the pixel
+         * @param y: y-coordiante of the pixel 
+         * @param c: colour to set
+        */
+        void set_pixel(const int x, const int y, const Vector3f c) {
+            // Eigen matrices (row, col) indicies
+            ImageUtil::set_pixel(this->image, x, y, c);
+        }
+
+        /**
+         * Converts the RGB image to a three-channel OpenCV matrix.
+         * 
+         * @return: Three-channel OpenCV matrix of the RGB image. This matrix must be freed.
+        */
         cv::Mat *to_cv_mat();
 
         /**
@@ -183,7 +292,7 @@ class RGBImage {
          * 
          * @param kernel: Gaussian kernel 
          * 
-         * @return: Blurred image
+         * @return: Blurred image. This image must be freed.
         */
         RGBImage *gaussian_blur(const GaussianKernel *kernel);
 
@@ -195,10 +304,15 @@ class RGBImage {
         /**
          * Computes the difference between the image and the compare_image
          * 
-         * @return: Matrix containing the difference betweene each pixel
+         * @return: GrayImage containing the difference between each pixel. This image must be freed
         */
-        GrayImage* difference(RGBImage *compare_image);
+        GrayImage* difference(const RGBImage *compare_image);
 
+        /**
+         * Computes the luminosity image of the RGB image
+         * 
+         * @return GrayImage containing the luminosity of every pixel. This image must be freed.
+        */
         GrayImage *luminosity();
 };
 
