@@ -5,27 +5,27 @@
 using namespace std;
 
 namespace ImageUtil {
-    float get_pixel(GrayMatrix *image, int x, int y) {
+    float get_pixel(const GrayMatrix *image, const int x, const int y) {
         return (*image)(y, x);
     }
 
-    void set_pixel(GrayMatrix *image, int x, int y, float colour) {
+    void set_pixel(GrayMatrix *image, const int x, const int y, const float colour) {
         (*image)(y, x) = colour;
     }
 
-    Vector3f get_pixel(RGBMatrix *image, int x, int y) {
+    Vector3f get_pixel(const RGBMatrix *image, const int x, const int y) {
         return (*image)(y, x);
     }
 
-    void set_pixel(RGBMatrix *image, int x, int y, Vector3f colour) {
+    void set_pixel(RGBMatrix *image, const int x, const int y, const Vector3f colour) {
         (*image)(y, x) = colour;
     }
 
-    Vector3f alpha_blend(Vector3f c1, Vector3f c2, float alpha) {
+    Vector3f alpha_blend(const Vector3f c1, const Vector3f c2, const float alpha) {
             return (alpha * c1 + (1 - alpha) * c2).cwiseMin(255.0f).cwiseMax(0.0f);
         }
 
-    float alpha_blend(float h1, float h2, float alpha) {
+    float alpha_blend(const float h1, const float h2, const float alpha) {
         return std::clamp(alpha * h1 + (1 - alpha) * h2, 0.0f, 255.0f);
     }
 }
@@ -73,7 +73,7 @@ cv::Mat *GrayImage::to_cv_mat() {
     return cv_image;
 }
 
-std::tuple<Vector2f, float> GrayImage::compute_gradient(int x, int y, HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y) {
+std::tuple<Vector2f, float> GrayImage::compute_gradient(const int x, const int y, const HorizontalSobelKernel *sobel_x, const VerticalSobelKernel *sobel_y) {
     Vector2f grad = Vector2f::Zero();
     Vector3f pixel;
     float grad_mag, intensity;
@@ -104,7 +104,7 @@ std::tuple<Vector2f, float> GrayImage::compute_gradient(int x, int y, Horizontal
     return std::tuple<Vector2f, float>(grad, grad_mag);
 }
 
-RGBImage *GrayImage::compute_normals(HorizontalSobelKernel *sobel_x, VerticalSobelKernel *sobel_y) {
+RGBImage *GrayImage::compute_normals(const HorizontalSobelKernel *sobel_x, const VerticalSobelKernel *sobel_y) {
     Vector3f normal;
     Vector2f grad;
     float grad_mag;
@@ -185,7 +185,7 @@ RGBImage* RGBImage::gaussian_blur(const GaussianKernel *kernel) {
     return blurred_image;
 }
 
-Vector3f RGBImage::convolve(int x, int y, const GaussianKernel *kernel) {
+Vector3f RGBImage::convolve(const int x, const int y, const GaussianKernel *kernel) {
     Vector3f pixel;
     int image_x, image_y;
     float value;
@@ -245,7 +245,7 @@ Vector3f RGBImage::average_colour() {
     return avg / (this->width * this->height);
 }
 
-GrayImage* RGBImage::difference(RGBImage *compare_image) {
+GrayImage* RGBImage::difference(const RGBImage *compare_image) {
     // Ensure the images have the same dimensions
     if (this->width != compare_image->get_width() || this->height != compare_image->get_height()) {
         throw std::invalid_argument("Cannot compute the difference of images with different dimensions");
