@@ -1,5 +1,9 @@
 # Fast Paint Texture Research Project
 
+**Group 91**
+
+Hugo Kat (u7286091), Shawn Koshy (u6948196), and Michelle Jordi (u7134253)
+
 ## Overview
 
 Reimplemented Aaron Hertzmann's Fast Paint Texture algorithm presented in [Fast Paint Texture algorithm](https://www.dgp.toronto.edu/papers/ahertzmann_NPAR2002.pdf) in C++. The Fast Paint Texture algorithm extends Aaron Hertzmann's previous painting algorithm presented in [Painterly Rendering with Curved Brush Strokes of Multiple Sizes](https://dl.acm.org/doi/pdf/10.1145/280814.280951). Our project structure is based on [Aaron Hertzmann's Java implementation](https://github.com/hertzmann/painterJava/tree/main) of Painterly Rendering with Curved Brush Strokes of Multiple Sizes. 
