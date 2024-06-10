@@ -1,8 +1,6 @@
 # Fast Paint Texture Research Project
 
-**Group 91**
-
-Hugo Kat (u7286091), Shawn Koshy (u6948196), and Michelle Jordi (u7134253)
+Final research project for COMP4610 Computer Graphics at the ANU. 
 
 ## Overview
 
