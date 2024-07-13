@@ -17,6 +17,12 @@ Where
 - `input-image` is the file name of the input image
 - `shader` is the lighting shader to be used for rendering. `shader` can have the following values: `blinn-phong`, `lambertian`, `oren-nayar`, `toon`, and `normal`.
 
+## Dependencies
+The program has the following dependencies:
+- [CMake](https://www.linuxfordevices.com/tutorials/linux/install-cmake-on-linux)
+- [OpenCV](https://linuxize.com/post/how-to-install-opencv-on-ubuntu-20-04/)
+- [Eigen3](https://www.cyberithub.com/how-to-install-eigen3-on-ubuntu-20-04-lts-focal-fossa/)
+
 ## Scripts
 We provide `.sh` scripts for simple usage of the program. Before trying to run any of the scripts, create the `build` directory in the project root. The expected project hierarchy is shown below.
 
