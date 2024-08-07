@@ -10,20 +10,9 @@ Our primary contribution is applying different lighting shaders and brush stroke
 
 ## Example
 
-<div style="display: flex; justify-content: space-around; align-items: flex-start;">
-  <div style="text-align: center; margin: 10px;">
-    <div>Source</div>
-    <img src="readme-imgs/reis.png" alt="Source" style="width: 200px;"/>
-  </div>
-  <div style="text-align: center; margin: 10px;">
-    <div>Painted</div>
-    <img src="readme-imgs/paint-reis.png" alt="Painted" style="width: 200px;"/>
-  </div>
-  <div style="text-align: center; margin: 10px;">
-    <div>Textured</div>
-    <img src="readme-imgs/texture-reis.png" alt="Textured" style="width: 200px;"/>
-  </div>
-</div>
+Fast paint texture pipeline showing the soruce, painted and final textured image respectively.
+
+<img src="readme-imgs/reis.png" alt="Source" style="width: 300px;"/> <img src="readme-imgs/paint-reis.png" alt="Painted" style="width: 300px;"/> <img src="readme-imgs/texture-reis.png" alt="Textured" style="width: 300px;"/>
 
 ## Usage
 The program has the following usage
