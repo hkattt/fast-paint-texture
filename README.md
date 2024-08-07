@@ -6,7 +6,24 @@ Final research project for COMP4610 Computer Graphics at the ANU.
 
 Reimplemented Aaron Hertzmann's Fast Paint Texture algorithm presented in [Fast Paint Texture algorithm](https://www.dgp.toronto.edu/papers/ahertzmann_NPAR2002.pdf) in C++. The Fast Paint Texture algorithm extends Aaron Hertzmann's previous painting algorithm presented in [Painterly Rendering with Curved Brush Strokes of Multiple Sizes](https://dl.acm.org/doi/pdf/10.1145/280814.280951). Our project structure is based on [Aaron Hertzmann's Java implementation](https://github.com/hertzmann/painterJava/tree/main) of Painterly Rendering with Curved Brush Strokes of Multiple Sizes. 
 
-Our primary contribution is applying different lighting shaders and brush stroke textures to the Fast Paint Texture algorith. 
+Our primary contribution is applying different lighting shaders and brush stroke textures to the Fast Paint Texture algorithm.
+
+## Example
+
+<div style="display: flex; justify-content: space-around; align-items: flex-start;">
+  <div style="text-align: center; margin: 10px;">
+    <div>Source</div>
+    <img src="readme-imgs/reis.png" alt="Source" style="width: 200px;"/>
+  </div>
+  <div style="text-align: center; margin: 10px;">
+    <div>Painted</div>
+    <img src="readme-imgs/paint-reis.png" alt="Painted" style="width: 200px;"/>
+  </div>
+  <div style="text-align: center; margin: 10px;">
+    <div>Textured</div>
+    <img src="readme-imgs/texture-reis.png" alt="Textured" style="width: 200px;"/>
+  </div>
+</div>
 
 ## Usage
 The program has the following usage
